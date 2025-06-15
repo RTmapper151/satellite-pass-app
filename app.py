@@ -101,12 +101,12 @@ if st.button("Run Analysis"):
         output_file = "satellite_passes.txt"
 
         with open(output_file, "w") as f:
-            f.write(f"Earth Observation Satellites that passed over the search area on {year}-{month:02d}-{day:02d} (with {swath_width_m/1000:.0f} km swath):\n\n")
+            f.write(f"{sat_type} Satellites that passed over the search area on {year}-{month:02d}-{day:02d} (with {swath_width_m/1000:.0f} km swath):\n\n")
             if passing_sats:
                 for name, pass_time in passing_sats:
                     f.write(f"{name} passes over AOI at {pass_time}\n")
             else:
-                f.write("No satellites passed over the over the search area on {year}-{month:02d}-{day:02d} (with {swath_width_m/1000:.0f} km swath.\n")
+                f.write(f"No {sat_type} satellites passed over the search area on {year}-{month:02d}-{day:02d} (with {swath_width_m/1000:.0f} km swath).\n")
 
         print(f"\nResults saved to {output_file}")
 

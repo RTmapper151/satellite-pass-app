@@ -28,8 +28,8 @@ sat_type = st.selectbox("Choose Satellite Type", options=[
 ])
 
 sat_group_urls = {
-    "Earth Observation": "https://celestrak.org/NORAD/elements/gp.php?GROUP=resource&FORMAT=tle",
-    "Scientific": "https://celestrak.org/NORAD/elements/gp.php?GROUP=scientific&FORMAT=tle"
+    "Earth Observation": 'https://celestrak.org/NORAD/elements/gp.php?GROUP=resource&FORMAT=tle',
+    "Scientific": 'https://celestrak.org/NORAD/elements/gp.php?GROUP=scientific&FORMAT=tle'
 }
 
 tle_url = sat_group_urls[sat_type]

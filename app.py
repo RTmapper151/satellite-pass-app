@@ -44,7 +44,6 @@ if st.button("Run Analysis"):
     else:
         # === Load Satellite Data ===
         year, month, day = date.year, date.month, date.day
-        tle_url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=resource&FORMAT=tle'
         satellites = load.tle_file(tle_url)
         ts = load.timescale()
 

@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Point, box, LineString
 from skyfield.api import load
 import numpy as np
+from datetime import date as dt_date
+
 
 st.title("Satellite Pass Finder")
 st.markdown("This tool finds Earth Observation satellites that pass over your area of interest.")
@@ -34,7 +36,7 @@ sat_group_urls = {
 
 tle_url = sat_group_urls[sat_type]
 
-date = st.date_input("Select Date", value=None)
+date = st.date_input("Select Date", value=dt_date.today())
 swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
 interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)
 

@@ -21,7 +21,19 @@ with col2:
 
 aoi = gpd.GeoDataFrame({'geometry': [box(min_lon, min_lat, max_lon, max_lat)]}, crs="EPSG:4326")
 
-st.header("2. Date and Parameters")
+st.header("2. Select Satellite Type and Parameters")
+
+sat_type = st.selectbox("Choose Satellite Type", options=[
+    "Earth Observation", "Scientific"
+])
+
+sat_group_urls = {
+    "Earth Observation": "https://celestrak.org/NORAD/elements/gp.php?GROUP=resource&FORMAT=tle",
+    "Scientific": "https://celestrak.org/NORAD/elements/gp.php?GROUP=scientific&FORMAT=tle"
+}
+
+tle_url = sat_group_urls[sat_type]
+
 date = st.date_input("Select Date", value=None)
 swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
 interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)

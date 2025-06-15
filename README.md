@@ -1,4 +1,5 @@
-# satellite-pass-app
-Streamlit app to track satellite passes over AOIs.
+# NAU Capstone
+
+Creating a GIS app that pulls sat passovers in a given day for a given area.
 
 LATEST BRANCH: downloader version

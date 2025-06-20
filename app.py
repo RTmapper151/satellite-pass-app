@@ -99,7 +99,8 @@ def plot_results(aoi, plot_data, swath_width_km):
 
 # --- Streamlit UI ---
 st.title("Satellite Pass Finder")
-st.markdown("This tool finds satellites that pass over your AOI and tells you how it got the data.")
+st.caption("📅 We analyze just one day because satellites in Low Earth Orbit (LEO) move quickly and their orbits change frequently. Using older data reduces prediction accuracy, so daily updates give the most reliable pass information.")
+
 
 st.header("1. Define Search Area")
 col1, col2 = st.columns(2)

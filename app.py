@@ -110,6 +110,7 @@ group_options = {
     "CubeSats": "cubesat",
     "Weather": "weather",
     "GOES": "goes",
+    "NOAA": "noaa",
     "Planet": "planet",
     "Last 30 Days": "last-30-days"
 }

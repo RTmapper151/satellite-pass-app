@@ -105,7 +105,7 @@ aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
 st.header("2. Select Satellite Group and Parameters")
 group_options = {
     "Earth Observation": "resource",
-    "Scientific": "scientific",
+    "Scientific": "science",
     "CubeSats": "cubesat",
     "Weather": "weather"
 }

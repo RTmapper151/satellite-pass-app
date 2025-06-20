@@ -110,6 +110,22 @@ group_options = {
     "Weather": "weather"
 }
 sat_type = st.selectbox("Satellite Group", options=list(group_options.keys()))
+group_descriptions = {
+    "Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.",
+    "Weather": "Satellites that provide meteorological data and atmospheric monitoring.",
+    "CubeSats": "Miniaturized satellites often used for scientific and academic purposes.",
+    "Space Stations": "Orbital platforms like the ISS used for experiments, research, and human habitation.",
+    "NOAA": "National Oceanic and Atmospheric Administration satellites, mainly used for weather and ocean monitoring.",
+    "GOES": "Geostationary Operational Environmental Satellites for continuous weather observation over the Americas.",
+    "GPS": "Navigation satellites in the Global Positioning System constellation.",
+    "Iridium": "Communications satellites providing global voice and data coverage.",
+    "Geodetic": "Satellites used for measuring Earth's shape, gravity, and geophysical phenomena.",
+    "Active": "All currently operational satellites tracked by CelesTrak.",
+}
+
+# Display description
+st.caption(f"📘 **Description:** {group_descriptions.get(sat_type, 'No description available.')}")
+
 tle_group = group_options[sat_type]
 
 date = st.date_input("Date", value=dt_date.today())

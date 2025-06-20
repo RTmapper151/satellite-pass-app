@@ -5,3 +5,4 @@ shapely>=2.0.0
 skyfield>=1.45
 numpy>=1.25.0
 pandas>=2.1.0
+cartopy

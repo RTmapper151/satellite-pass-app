@@ -70,31 +70,58 @@ def find_passing_sats(satellites, times, aoi, swath_width_m):
 
 # --- Plot map ---
 def plot_results(aoi, plot_data, swath_width_km):
+    import cartopy.crs as ccrs
+    import cartopy.feature as cfeature
+    import geopandas as gpd
+    from cartopy.io.shapereader import natural_earth
+    import shapefile  # pyshp
+    import matplotlib.pyplot as plt
+
     fig = plt.figure(figsize=(10, 7))
     ax = plt.axes(projection=ccrs.PlateCarree())
 
-    # Basemap layers
+    # Base features
     ax.coastlines()
-    ax.add_feature(cfeature.BORDERS, linestyle=':')
-    ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
+    ax.add_feature(cfeature.LAND, alpha=0.3)
     ax.add_feature(cfeature.OCEAN, alpha=0.1)
+    ax.add_feature(cfeature.BORDERS, linestyle=':')
+    ax.add_feature(cfeature.LAKES, alpha=0.2)
+    ax.add_feature(cfeature.RIVERS)
 
-    # Plot AOI boundary
+    # Plot AOI
     aoi.boundary.plot(ax=ax, color='black', linewidth=2, label='AOI')
 
-    # Plot swaths and traces
+    # Plot swaths and tracks
     for item in plot_data:
         item['swath_gdf'].plot(ax=ax, color='red', alpha=0.4)
         ax.plot(*item['trace_line'].xy, color=item['color'], linewidth=1.5, label=item['name'])
 
-    # Set bounds
+    # Add country labels
+    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    for _, row in world.iterrows():
+        centroid = row.geometry.centroid
+        ax.text(centroid.x, centroid.y, row['name'], fontsize=6, alpha=0.6, transform=ccrs.PlateCarree())
+
+    # Add city labels
+    cities_path = natural_earth(resolution='110m', category='cultural', name='populated_places')
+    cities = gpd.read_file(cities_path)
+    cities = cities[cities['POP_MAX'] > 100000]  # Filter for large cities
+    for _, row in cities.iterrows():
+        ax.text(row.geometry.x, row.geometry.y, row['NAME'], fontsize=5, color='gray', alpha=0.5)
+
+    # Set extent
     bounds = aoi.total_bounds
     ax.set_extent([bounds[0] - 2, bounds[2] + 2, bounds[1] - 2, bounds[3] + 2], crs=ccrs.PlateCarree())
 
+    # Title and legend
     ax.set_title("Satellite Passes", fontsize=14)
-    ax.legend(fontsize=8, loc='lower left')
+    ax.legend(fontsize=7, loc='lower left')
+    ax.text(bounds[0], bounds[3] + 1, f"Swath width: {swath_width_km} km",
+            fontsize=10, fontweight='bold', color='navy')
+
     plt.tight_layout()
     return fig
+
 
 # --- Streamlit UI ---
 st.title("Satellite Pass Finder")

@@ -141,7 +141,7 @@ group_descriptions = {
     "Iridium": "Communications satellites providing global voice and data coverage.",
     "Geodetic": "Satellites used for measuring Earth's shape, gravity, and geophysical phenomena.",
     "Last 30 Days": "Satellites Launched in the last 30 Days.",
-    "Active": "All currently operational satellites tracked by CelesTrak."
+    "Active": "All currently operational satellites tracked by CelesTrak. Note processing times will be greater than other selections."
 }
 
 sat_type = st.selectbox("Satellite Group", options=list(group_options.keys()))

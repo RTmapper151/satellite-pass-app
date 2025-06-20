@@ -107,7 +107,8 @@ group_options = {
     "Earth Observation": "resource",
     "Scientific": "science",
     "CubeSats": "cubesat",
-    "Weather": "weather"
+    "Weather": "weather",
+    "Last 30 Days": "last-30-days"
 }
 group_descriptions = {
     "Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.",
@@ -119,6 +120,7 @@ group_descriptions = {
     "GPS": "Navigation satellites in the Global Positioning System constellation.",
     "Iridium": "Communications satellites providing global voice and data coverage.",
     "Geodetic": "Satellites used for measuring Earth's shape, gravity, and geophysical phenomena.",
+    "Last 30 Days": "Satellites Launched in the last 30 Days.",
     "Active": "All currently operational satellites tracked by CelesTrak."
 }
 

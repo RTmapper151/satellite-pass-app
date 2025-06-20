@@ -6,6 +6,8 @@ from skyfield.api import load
 import numpy as np
 import os
 from datetime import date as dt_date
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 # --- Downloader with caching ---
 def download_tle(group, save_folder, max_days=1.0):
@@ -68,22 +70,29 @@ def find_passing_sats(satellites, times, aoi, swath_width_m):
 
 # --- Plot map ---
 def plot_results(aoi, plot_data, swath_width_km):
-    fig, ax = plt.subplots(figsize=(10, 7))
+    fig = plt.figure(figsize=(10, 7))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+
+    # Basemap layers
+    ax.coastlines()
+    ax.add_feature(cfeature.BORDERS, linestyle=':')
+    ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
+    ax.add_feature(cfeature.OCEAN, alpha=0.1)
+
+    # Plot AOI boundary
     aoi.boundary.plot(ax=ax, color='black', linewidth=2, label='AOI')
 
+    # Plot swaths and traces
     for item in plot_data:
         item['swath_gdf'].plot(ax=ax, color='red', alpha=0.4)
         ax.plot(*item['trace_line'].xy, color=item['color'], linewidth=1.5, label=item['name'])
 
+    # Set bounds
     bounds = aoi.total_bounds
-    ax.set_xlim(bounds[0] - 2, bounds[2] + 2)
-    ax.set_ylim(bounds[1] - 2, bounds[3] + 2)
+    ax.set_extent([bounds[0] - 2, bounds[2] + 2, bounds[1] - 2, bounds[3] + 2], crs=ccrs.PlateCarree())
+
     ax.set_title("Satellite Passes", fontsize=14)
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
-    ax.grid(True)
-    ax.legend(fontsize=8, loc='lower left', frameon=True)
-    ax.text(bounds[0], bounds[3] + 1, f"Swath width: {swath_width_km} km", fontsize=12, fontweight='bold', color='navy')
+    ax.legend(fontsize=8, loc='lower left')
     plt.tight_layout()
     return fig
 

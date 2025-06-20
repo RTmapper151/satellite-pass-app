@@ -108,16 +108,19 @@ group_options = {
     "Scientific": "science",
     "CubeSats": "cubesat",
     "Weather": "weather",
+    "GOES": "goes",
+    "Planet": "planet",
     "Last 30 Days": "last-30-days"
 }
 group_descriptions = {
     "Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.",
     "Weather": "Satellites that provide meteorological data and atmospheric monitoring.",
     "CubeSats": "Miniaturized satellites often used for scientific and academic purposes.",
-    "Scientific": "Orbital platforms like the ISS used for experiments, research, and human habitation.",
+    "Scientific": "idk science stuff probably.",
     "NOAA": "National Oceanic and Atmospheric Administration satellites, mainly used for weather and ocean monitoring.",
     "GOES": "Geostationary Operational Environmental Satellites for continuous weather observation over the Americas.",
     "GPS": "Navigation satellites in the Global Positioning System constellation.",
+    "Planet": "planet.com",
     "Iridium": "Communications satellites providing global voice and data coverage.",
     "Geodetic": "Satellites used for measuring Earth's shape, gravity, and geophysical phenomena.",
     "Last 30 Days": "Satellites Launched in the last 30 Days.",

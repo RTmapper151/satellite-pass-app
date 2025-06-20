@@ -113,7 +113,7 @@ group_descriptions = {
     "Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.",
     "Weather": "Satellites that provide meteorological data and atmospheric monitoring.",
     "CubeSats": "Miniaturized satellites often used for scientific and academic purposes.",
-    "Scientific": "Do I need to explain all of science?"
+    "Scientific": "Do I need to explain all of science?",
     "Space Stations": "Orbital platforms like the ISS used for experiments, research, and human habitation.",
     "NOAA": "National Oceanic and Atmospheric Administration satellites, mainly used for weather and ocean monitoring.",
     "GOES": "Geostationary Operational Environmental Satellites for continuous weather observation over the Americas.",

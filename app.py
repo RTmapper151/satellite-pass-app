@@ -149,6 +149,7 @@ date = st.date_input("Date", value=dt_date.today())
 swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
 st.caption("📏 **Swath Width** refers to how wide a satellite's coverage area is during each pass. A higher swath value increases the area covered (more likely to detect a pass), while a lower swath makes detection more precise but may miss satellites skimming the edge of the AOI.")
 interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)
+st.caption("⏱️ **Time Interval** sets how often the satellite positions are checked throughout the day. A smaller interval gives more precise pass timings but may take longer to compute, while a larger interval is faster but less precise.")
 
 if st.button("Run Analysis"):
     year, month, day = date.year, date.month, date.day

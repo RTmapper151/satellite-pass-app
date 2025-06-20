@@ -180,7 +180,18 @@ if st.button("Run Analysis"):
     with open(output_img, "rb") as f:
         st.download_button("🖼️ Download Map Image", data=f, file_name=output_img, mime="image/png")
 
-st.sidebar.markdown(
-    "**ℹ️ Disclaimer:** Data shown is based only on satellites listed in CelesTrak's public TLE groups. Not all orbiting satellites are included."
+st.markdown(
+    """
+    ---
+    📢 **Disclaimer**
+
+    This application retrieves satellite orbital data exclusively from [CelesTrak](https://celestrak.org/), 
+    a public source of satellite TLE (Two-Line Element) data. The accuracy of pass predictions depends on 
+    the quality and update frequency of CelesTrak's datasets. Only satellites listed in the selected 
+    CelesTrak group will be included in the analysis.
+
+    This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
+    """
 )
+
 

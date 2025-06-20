@@ -150,6 +150,27 @@ st.caption(f"📘 **Description:** {group_descriptions.get(sat_type, 'No descrip
 
 tle_group = group_options[sat_type]
 
+st.header("4. Satellite Data Resources")
+
+data_links = {
+    "Earth Observation": "https://earthdata.nasa.gov/",
+    "Weather": "https://www.ncdc.noaa.gov/data-access",
+    "CubeSats": "https://www.cubesat.org/",
+    "Scientific": "https://science.nasa.gov/data",
+    "NOAA": "https://www.nesdis.noaa.gov/",
+    "GOES": "https://www.goes.noaa.gov/",
+    "GPS": "https://www.gps.gov/",
+    "Iridium": "https://www.iridium.com/",
+    "Geodetic": "https://cddis.nasa.gov/",
+    "Active": "https://celestrak.org/NORAD/elements/",
+}
+
+if sat_type in data_links:
+    st.markdown(f"**More data and info for {sat_type} satellites:** [Click here]({data_links[sat_type]})")
+else:
+    st.write("No additional data links available for this group.")
+
+
 date = st.date_input("Date", value=dt_date.today())
 st.caption("📅 We analyze just one day because satellites in Low Earth Orbit (LEO) move quickly and their orbits change frequently. Using older data reduces prediction accuracy, so daily updates give the most reliable pass information.")
 swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)

@@ -6,7 +6,7 @@ LATEST BRANCH: data pull_exp
 
 I built out three main scripts: `downloader.py`, which pulls and caches TLE files from CelesTrak; `analysis.py`, which handles satellite pass detection and plotting; and `app.py`, which ties everything together in a Streamlit interface.
 
-I ran into an issue where switching satellite groups—like `resource` versus `scientific`—wasn’t changing the results. Turned out, some groups on CelesTrak either don’t exist or are mislabeled. The TLE URLs were failing quietly or returning fallback data, which made it look like everything was working when it wasn’t. I fixed this by adding a line in the app that shows exactly where the TLE file was pulled from—either freshly downloaded or loaded from cache. That check helps debug any group-related issues quickly.
+I ran into an issue where switching satellite groups like `resource` versus `scientific wasn’t changing the results. Turned out, some groups on CelesTrak either don’t exist or are mislabeled. The TLE URLs were failing quietly or returning fallback data, which made it look like everything was working when it wasn’t. I fixed this by adding a line in the app that shows exactly where the TLE file was pulled from—either freshly downloaded or loaded from cache. That check helps debug any group-related issues quickly.
 
 I added group descriptions to the dropdown so when someone picks a satellite group, a short blurb appears to explain what those satellites are typically used for. Under the swath width and time interval sliders, I also added explanations: wider swaths cover more area but may reduce precision, and larger intervals mean fewer checks, which might miss narrow passes.
 

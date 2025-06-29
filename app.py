@@ -11,6 +11,54 @@ import cartopy.feature as cfeature
 import shutil
 import pandas as pd
 import zipfile
+from fpdf import FPDF
+from PIL import Image
+import io
+
+def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_source, passing_sats, fig):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    # Title
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, "Satellite Pass Daily Report", ln=True, align='C')
+    pdf.ln(10)
+
+    # Metadata and header info
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, f"TLE Source: {tle_source}")
+    pdf.multi_cell(0, 10, f"Satellite Group: {sat_type}")
+    pdf.multi_cell(0, 10, f"Date: {year}-{month:02d}-{day:02d}")
+    pdf.multi_cell(0, 10, f"Swath Width: {swath_km} km")
+    pdf.ln(5)
+
+    # Satellite passes info
+    if passing_sats:
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 10, f"{len(passing_sats)} satellite(s) passed over the AOI:", ln=True)
+        pdf.set_font("Arial", "", 12)
+        for name, t in passing_sats:
+            pdf.multi_cell(0, 10, f"🛰️ {name} at {t}")
+    else:
+        pdf.multi_cell(0, 10, "No satellites passed over the area.")
+
+    pdf.ln(10)
+
+    # Save matplotlib figure to a bytes buffer
+    img_buffer = io.BytesIO()
+    fig.savefig(img_buffer, format='PNG', dpi=300)
+    img_buffer.seek(0)
+
+    # Add image to PDF - scale image width to page width - margins
+    page_width = pdf.w - 2*pdf.l_margin
+    pdf.image(img_buffer, x=pdf.l_margin, w=page_width)
+
+    # Output PDF bytes
+    pdf_buffer = io.BytesIO()
+    pdf.output(pdf_buffer)
+    pdf_buffer.seek(0)
+    return pdf_buffer
 
 def show_data_links(sat_name):
     search_url = f"https://www.google.com/search?q={sat_name.replace(' ', '+')}+satellite+data+download"
@@ -185,24 +233,14 @@ if st.button("Run Analysis"):
     st.pyplot(fig)
 
     # === File outputs ===
-    output_text = "satellite_passes.txt"
-    with open(output_text, "w") as f:
-        f.write(f"TLE Source: {tle_source}\n\n")
-        f.write(f"{sat_type} satellites over AOI on {year}-{month:02d}-{day:02d} ({swath_km} km swath):\n\n")
-        if passing_sats:
-            for name, t in passing_sats:
-                f.write(f"{name} passes at {t}\n")
-        else:
-            f.write("No satellites passed over the area.\n")
+    pdf_buffer = create_pdf_report_text_and_image(tle_group, year, month, day, swath_km, tle_source, passing_sats, fig)
 
-    output_img = "satellite_passes_map.png"
-    fig.savefig(output_img, dpi=300)
-
-    with open(output_text, "r") as f:
-        st.download_button("📄 Download Pass List", data=f, file_name=output_text, mime="text/plain")
-
-    with open(output_img, "rb") as f:
-        st.download_button("🖼️ Download Map Image", data=f, file_name=output_img, mime="image/png")
+    st.download_button(
+        label="📄 Download Daily Report (.pdf)",
+        data=pdf_buffer,
+        file_name="satellite_daily_report.pdf",
+        mime="application/pdf"
+    )
 
     # === Shapefile export: satellite ground tracks + AOI boundary ===
     lines = []

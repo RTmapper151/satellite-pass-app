@@ -13,6 +13,9 @@ import pandas as pd
 import zipfile
 import tempfile
 import os
+from fpdf import FPDF
+from PIL import Image
+import io
 
 def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_source, passing_sats, fig):
     pdf = FPDF()

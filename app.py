@@ -56,10 +56,10 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
     os.remove(temp_img_path)
 
     # Output PDF to bytes buffer
-    pdf_buffer = io.BytesIO()
-    pdf.output(pdf_buffer)
-    pdf_buffer.seek(0)
-    return pdf_buffer
+    pdf_output = pdf.output(dest='S').encode('latin1')  # get PDF as bytes string
+    pdf_bytes = io.BytesIO(pdf_output)
+    pdf_bytes.seek(0)
+    return pdf_bytes
 
 def show_data_links(sat_name):
     search_url = f"https://www.google.com/search?q={sat_name.replace(' ', '+')}+satellite+data+download"

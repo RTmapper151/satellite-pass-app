@@ -10,9 +10,6 @@ from skyfield.api import load  # Satellite orbital data
 import numpy as np  # Numerical tools
 import os  # File handling
 from datetime import date as dt_date  # Handle dates
-import shutil
-import pandas as pd
-import zipfile
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
@@ -106,6 +103,7 @@ def plot_results(aoi, plot_data, swath_width_km):
     ax.legend(fontsize=8, loc='lower left')
     plt.tight_layout()
     return fig
+
 
 # --- Streamlit UI setup ---
 st.title("Satellite Pass Finder")
@@ -201,40 +199,6 @@ if st.button("Run Analysis"):
     with open(output_img, "rb") as f:
         st.download_button("🖼️ Download Map Image", data=f, file_name=output_img, mime="image/png")
 
-    # === Shapefile export: satellite ground tracks + AOI boundary ===
-    lines = []
-    for item in plot_data:
-        lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
-    tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
-
-    aoi_boundary = gpd.GeoDataFrame({'geometry': aoi.geometry.boundary}, crs="EPSG:4326")
-
-    shp_export_folder = "./temp_shp_export"
-    if os.path.exists(shp_export_folder):
-        shutil.rmtree(shp_export_folder)
-    os.makedirs(shp_export_folder)
-
-    tracks_path = os.path.join(shp_export_folder, "satellite_ground_tracks.shp")
-    aoi_path = os.path.join(shp_export_folder, "aoi_boundary.shp")
-    tracks_gdf.to_file(tracks_path)
-    aoi_boundary.to_file(aoi_path)
-
-    zip_path = os.path.join(shp_export_folder, "satellite_passes_and_aoi.zip")
-    with zipfile.ZipFile(zip_path, 'w') as zipf:
-        for base_path in [tracks_path, aoi_path]:
-            for ext in [".shp", ".shx", ".dbf", ".prj", ".cpg"]:
-                file = base_path.replace(".shp", ext)
-                if os.path.exists(file):
-                    zipf.write(file, arcname=os.path.basename(file))
-
-    with open(zip_path, "rb") as f:
-        st.download_button(
-            label="📥 Download Satellite Passes & AOI Shapefile (.zip)",
-            data=f,
-            file_name="satellite_passes_and_aoi.zip",
-            mime="application/zip"
-        )
-
 st.markdown(
     """
     ---
@@ -248,6 +212,3 @@ st.markdown(
     This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
     """
 )
-
-
-

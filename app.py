@@ -13,6 +13,9 @@ from datetime import date as dt_date  # Handle dates
 import shutil
 import pandas as pd
 import zipfile
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
 
 # --- Downloader with caching ---
 def download_tle(group, save_folder, max_days=1.0):

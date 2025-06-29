@@ -16,6 +16,119 @@ import shutil
 import pandas as pd
 import zipfile
 
+# === Satellite Data Access Lookup ===
+SATELLITE_DATA_SOURCES = {
+    "LANDSAT 9": {
+        "description": "Multispectral imagery for land monitoring.",
+        "links": [
+            ("USGS EarthExplorer", "https://earthexplorer.usgs.gov/"),
+            ("NASA Earthdata", "https://search.earthdata.nasa.gov/search?q=landsat")
+        ]
+    },
+    "SENTINEL-2A": {
+        "description": "Optical imagery (RGB, NIR, etc.) for land and vegetation.",
+        "links": [
+            ("Copernicus Open Access Hub", "https://scihub.copernicus.eu/"),
+            ("NASA Earthdata Search", "https://search.earthdata.nasa.gov/search?q=sentinel-2")
+        ]
+    },
+    "SENTINEL-6": {
+        "description": "Radar altimetry for sea level, wave height, and wind speed.",
+        "links": [
+            ("NASA PODAAC", "https://podaac.jpl.nasa.gov/Sentinel-6"),
+            ("EUMETSAT Data Store", "https://data.eumetsat.int/")
+        ]
+    },
+    "SENTINEL-1A": {
+        "description": "Synthetic aperture radar (SAR) for all-weather, day/night observation.",
+        "links": [
+            ("Copernicus Open Access Hub", "https://scihub.copernicus.eu/"),
+            ("Alaska SAR Facility", "https://www.asf.alaska.edu/")
+        ]
+    },
+    "TERRA": {
+        "description": "MODIS imagery for atmosphere, land, and ocean monitoring.",
+        "links": [
+            ("NASA Earthdata Search", "https://search.earthdata.nasa.gov/search?q=terra+modis"),
+            ("Worldview Snapshots", "https://wvs.earthdata.nasa.gov/")
+        ]
+    },
+    "AQUA": {
+        "description": "MODIS imagery, focused on water and atmospheric data.",
+        "links": [
+            ("NASA Earthdata Search", "https://search.earthdata.nasa.gov/search?q=aqua+modis")
+        ]
+    },
+    "PLANET-C": {
+        "description": "Private high-resolution Earth imagery.",
+        "links": [
+            ("Planet Explorer", "https://www.planet.com/explorer/")
+        ]
+    },
+    "ICEYE-X1": {
+        "description": "Commercial radar imagery (SAR) for rapid-response monitoring.",
+        "links": [
+            ("ICEYE Official Site", "https://www.iceye.com/")
+        ]
+    },
+    "NOAA 20": {
+        "description": "Weather and atmospheric observations with VIIRS.",
+        "links": [
+            ("NOAA CLASS Archive", "https://www.class.noaa.gov/")
+        ]
+    },
+    "SUOMI NPP": {
+        "description": "VIIRS sensor for global environmental monitoring.",
+        "links": [
+            ("NASA Earthdata Search", "https://search.earthdata.nasa.gov/search?q=suomi+npp")
+        ]
+    },
+    "RADARSAT-2": {
+        "description": "Canadian SAR satellite for sea ice, agriculture, and mapping.",
+        "links": [
+            ("Canadian Space Agency", "https://www.asc-csa.gc.ca/")
+        ]
+    },
+    "GOES-16": {
+        "description": "Geostationary weather satellite over the Americas.",
+        "links": [
+            ("NOAA CLASS Archive", "https://www.class.noaa.gov/")
+        ]
+    },
+    "ENVISAT": {
+        "description": "ESA legacy satellite for atmospheric, oceanic, and land data (archived).",
+        "links": [
+            ("ESA Data Access", "https://earth.esa.int/eogateway/missions/envisat")
+        ]
+    },
+    "NIMBUS-7": {
+        "description": "Historic NASA satellite with climate and ozone sensors (archived).",
+        "links": [
+            ("NASA Earthdata", "https://search.earthdata.nasa.gov/search?q=nimbus-7")
+        ]
+    },
+    "PROBA-V": {
+        "description": "Small ESA satellite for vegetation monitoring.",
+        "links": [
+            ("Copernicus Open Access", "https://scihub.copernicus.eu/")
+        ]
+    }
+}
+
+def show_data_links(sat_name):
+    entry = SATELLITE_DATA_SOURCES.get(sat_name.upper())
+    if entry:
+        st.markdown(f"**📡 {sat_name}**")
+        st.markdown(f"*{entry['description']}*")
+        for label, url in entry["links"]:
+            st.markdown(f"- 🔗 [{label}]({url})")
+    else:
+        # Fallback to search
+        st.markdown(f"**📡 {sat_name}**")
+        st.markdown("*No known data link in database.*")
+        search_url = f"https://www.google.com/search?q={sat_name.replace(' ', '+')}+satellite+data+download"
+        st.markdown(f"- 🔎 [Search for data]({search_url})")
+
 
 # --- Downloader with caching ---
 def download_tle(group, save_folder, max_days=1.0):
@@ -177,6 +290,8 @@ if st.button("Run Analysis"):
         st.success(f"{len(passing_sats)} satellite(s) passed over the AOI.")
         for name, t in passing_sats:
             st.write(f"🛰️ {name} at {t}")
+            show_data_links(name)
+
     else:
         st.warning("No satellites passed over the AOI.")
 

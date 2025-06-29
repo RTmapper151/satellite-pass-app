@@ -8,7 +8,7 @@ The goal of this project is to identify Earth observation satellite passes over 
 ## Updates
 
 ### 2025-06-29  
-Today is focused on organizing and documenting. I started by updating the README and digital journal to reflect how far the project has come. With the core analysis in good shape — reliably detecting satellite passes using bounding boxes and swath widths — the priority now shifts to refining the user interface. The Streamlit app is fully functional but needs more polish and better user flow. I’m outlining specific UI/UX tasks to work through next so I can move into a final cleanup phase.
+Focused on organizing and documenting. I started by updating the README and digital journal to reflect how far the project has come. With the core analysis in good shape reliably detecting satellite passes using bounding boxes and swath widths —the priority now shifts to refining the user interface. The Streamlit app is fully functional but needs more polish and better user flow. I’m outlining specific UI/UX tasks to work through next so I can move into a final cleanup phase.
 
 ### 2025-06-14  
 Rebuilt the analysis loop to handle multiple AOIs from a folder instead of a single shapefile. This change significantly improved batch processing and made comparisons across regions more efficient. I added automatic CRS standardization (EPSG:4326) to avoid projection issues, which had caused minor problems earlier. Each AOI now receives a randomized identifier for output labeling, with the intention of manually renaming as needed. The output console now prints satellite names and timestamps clearly, and the ground track maps are drawing consistently across runs.
@@ -41,4 +41,4 @@ This branch marked the first major structural change — we split the project in
 ### `data_pull_exp`  
 This became the primary experimental and feature expansion branch. It includes support for multiple satellite groups, custom satellite selection, disclaimer handling, UI polishing, and several usability improvements. Most of the recent development work happens here before it gets cleaned up and merged elsewhere.
 
-
+### 

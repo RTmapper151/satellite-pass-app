@@ -11,21 +11,18 @@ import cartopy.feature as cfeature
 import shutil
 import pandas as pd
 import zipfile
-from fpdf import FPDF
-from PIL import Image
-import io
+import tempfile
+import os
 
 def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_source, passing_sats, fig):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Title
+    # Title and metadata as before...
     pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, "Satellite Pass Daily Report", ln=True, align='C')
     pdf.ln(10)
-
-    # Metadata and header info
     pdf.set_font("Arial", "", 12)
     pdf.multi_cell(0, 10, f"TLE Source: {tle_source}")
     pdf.multi_cell(0, 10, f"Satellite Group: {sat_type}")
@@ -33,7 +30,6 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
     pdf.multi_cell(0, 10, f"Swath Width: {swath_km} km")
     pdf.ln(5)
 
-    # Satellite passes info
     if passing_sats:
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, f"{len(passing_sats)} satellite(s) passed over the AOI:", ln=True)
@@ -42,19 +38,21 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
             pdf.multi_cell(0, 10, f"🛰️ {name} at {t}")
     else:
         pdf.multi_cell(0, 10, "No satellites passed over the area.")
-
     pdf.ln(10)
 
-    # Save matplotlib figure to a bytes buffer
-    img_buffer = io.BytesIO()
-    fig.savefig(img_buffer, format='PNG', dpi=300)
-    img_buffer.seek(0)
+    # Save figure to a temporary PNG file
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+        temp_img_path = tmpfile.name
+        fig.savefig(temp_img_path, format='PNG', dpi=300)
 
-    # Add image to PDF - scale image width to page width - margins
+    # Add image to PDF
     page_width = pdf.w - 2*pdf.l_margin
-    pdf.image(img_buffer, x=pdf.l_margin, w=page_width)
+    pdf.image(temp_img_path, x=pdf.l_margin, w=page_width)
 
-    # Output PDF bytes
+    # Clean up the temp file
+    os.remove(temp_img_path)
+
+    # Output PDF to bytes buffer
     pdf_buffer = io.BytesIO()
     pdf.output(pdf_buffer)
     pdf_buffer.seek(0)

@@ -1,7 +1,3 @@
-# Benchmark_29JUN
-# This version represents a turning point in the project.
-# Stable feature set with multiple AOI support, TLE parsing, pass detection with swath width, and Streamlit UI foundations.
-
 import streamlit as st  # Build interactive UI
 import geopandas as gpd  # Handle geospatial data
 import matplotlib.pyplot as plt  # Plot maps
@@ -118,11 +114,11 @@ st.markdown("This tool finds satellites that pass over your AOI and tells you ho
 st.header("1. Define Search Area")
 col1, col2 = st.columns(2)
 with col1:
-    min_lon = st.number_input("Min Longitude", value=123.0)
-    min_lat = st.number_input("Min Latitude", value=20.0)
+    min_lon = st.number_input("Min Longitude", value=127.5)
+    min_lat = st.number_input("Min Latitude", value=25.5)
 with col2:
-    max_lon = st.number_input("Max Longitude", value=125.0)
-    max_lat = st.number_input("Max Latitude", value=22.0)
+    max_lon = st.number_input("Max Longitude", value=129.0)
+    max_lat = st.number_input("Max Latitude", value=27.0)
 
 aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
 

@@ -12,6 +12,9 @@ import os  # File handling
 from datetime import date as dt_date  # Handle dates
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+import shutil
+import pandas as pd
+import zipfile
 
 
 # --- Downloader with caching ---
@@ -198,6 +201,46 @@ if st.button("Run Analysis"):
 
     with open(output_img, "rb") as f:
         st.download_button("🖼️ Download Map Image", data=f, file_name=output_img, mime="image/png")
+
+# === Shapefile export: satellite ground tracks + AOI boundary ===
+lines = []
+for item in plot_data:
+    lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
+tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
+
+# Get AOI boundary as lines
+aoi_boundary = gpd.GeoDataFrame({'geometry': aoi.geometry.boundary}, crs="EPSG:4326")
+
+# Create clean export folder
+shp_export_folder = "./temp_shp_export"
+if os.path.exists(shp_export_folder):
+    shutil.rmtree(shp_export_folder)
+os.makedirs(shp_export_folder)
+
+# Save both shapefiles
+tracks_path = os.path.join(shp_export_folder, "satellite_ground_tracks.shp")
+aoi_path = os.path.join(shp_export_folder, "aoi_boundary.shp")
+tracks_gdf.to_file(tracks_path)
+aoi_boundary.to_file(aoi_path)
+
+# Bundle everything into a .zip file
+zip_path = os.path.join(shp_export_folder, "satellite_passes_and_aoi.zip")
+with zipfile.ZipFile(zip_path, 'w') as zipf:
+    for base_path in [tracks_path, aoi_path]:
+        for ext in [".shp", ".shx", ".dbf", ".prj", ".cpg"]:
+            file = base_path.replace(".shp", ext)
+            if os.path.exists(file):
+                zipf.write(file, arcname=os.path.basename(file))
+
+# Make it downloadable via Streamlit
+with open(zip_path, "rb") as f:
+    st.download_button(
+        label="📥 Download Satellite Passes & AOI Shapefile (.zip)",
+        data=f,
+        file_name="satellite_passes_and_aoi.zip",
+        mime="application/zip"
+    )
+
 
 st.markdown(
     """

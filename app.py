@@ -199,6 +199,7 @@ with tabs[0]:
 
     st.header("2. Select Satellite Group and Parameters")
     group_options = {
+        "Last 30 Days": "last-30-days",
         "Active": "active",
         "Earth Observation": "resource",
         "Scientific": "science",
@@ -206,8 +207,7 @@ with tabs[0]:
         "Weather": "weather",
         "GOES": "goes",
         "NOAA": "noaa",
-        "Planet": "planet",
-        "Last 30 Days": "last-30-days"
+        "Planet": "planet"
     }
     group_descriptions = {
         "Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.",

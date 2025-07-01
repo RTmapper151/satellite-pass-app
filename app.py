@@ -180,6 +180,7 @@ def plot_results(aoi, plot_data, swath_width_km):
 st.title("Satellite Pass Finder")
 st.markdown("This tool finds satellites that pass over your AOI and tells you how it got the data.")
 
+# 1. Define AOI inputs
 st.header("1. Define Search Area")
 col1, col2 = st.columns(2)
 with col1:
@@ -193,18 +194,17 @@ aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
 
 st.pyplot(preview_aoi_map(aoi))
 
-# Initialize last_run in session state if missing
+# Last run summary in expander if present
 if "last_run" not in st.session_state:
     st.session_state["last_run"] = None
 
-# Show last run summary if available
 if st.session_state["last_run"]:
     with st.expander("🛰️ Last Run Summary"):
         st.write(f"Satellites Over AOI: {st.session_state['last_run']['count']}")
         for name, time in st.session_state["last_run"]["sats"]:
             st.write(f"- {name} at {time}")
 
-
+# 2. Select Satellite Group and Parameters
 st.header("2. Select Satellite Group and Parameters")
 group_options = {
     "Active": "active",
@@ -277,65 +277,72 @@ if st.button("Run Analysis"):
     status_text.empty()
     progress_bar.empty()
 
-    st.subheader("3. Results")
-    st.write(tle_source)
-    if passing_sats:
-        st.success(f"{len(passing_sats)} satellite(s) passed over the AOI.")
-        for name, t in passing_sats:
-            st.write(f"🛰️ {name} at {t}")
-            show_data_links(name)
-    else:
-        st.warning("No satellites passed over the AOI.")
+    # Save last run to session state
+    st.session_state["last_run"] = {
+        "count": len(passing_sats),
+        "sats": passing_sats
+    }
 
-    st.pyplot(fig)
+    # TAB LAYOUT
+    tabs = st.tabs(["Results", "Downloads"])
 
-    # === Show spinner while generating files ===
-    with st.spinner("Generating PDF report and shapefile package..."):
-        pdf_buffer = create_pdf_report_text_and_image(
-            tle_group, year, month, day, swath_km, tle_source, passing_sats, fig
-        )
+    with tabs[0]:
+        st.subheader("3. Results")
+        st.write(tle_source)
+        if passing_sats:
+            st.success(f"{len(passing_sats)} satellite(s) passed over the AOI.")
+            for name, t in passing_sats:
+                st.write(f"🛰️ {name} at {t}")
+                show_data_links(name)
+        else:
+            st.warning("No satellites passed over the AOI.")
+        st.pyplot(fig)
 
-        lines = []
-        for item in plot_data:
-            lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
-        tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
+    with tabs[1]:
+        with st.spinner("Generating PDF report and shapefile package..."):
+            pdf_buffer = create_pdf_report_text_and_image(
+                tle_group, year, month, day, swath_km, tle_source, passing_sats, fig
+            )
 
-        aoi_boundary = gpd.GeoDataFrame({'geometry': aoi.geometry.boundary}, crs="EPSG:4326")
+            lines = []
+            for item in plot_data:
+                lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
+            tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
 
-        shp_export_folder = "./temp_shp_export"
-        if os.path.exists(shp_export_folder):
-            shutil.rmtree(shp_export_folder)
-        os.makedirs(shp_export_folder)
+            aoi_boundary = gpd.GeoDataFrame({'geometry': aoi.geometry.boundary}, crs="EPSG:4326")
 
-        tracks_path = os.path.join(shp_export_folder, "satellite_ground_tracks.shp")
-        aoi_path = os.path.join(shp_export_folder, "aoi_boundary.shp")
-        tracks_gdf.to_file(tracks_path)
-        aoi_boundary.to_file(aoi_path)
+            shp_export_folder = "./temp_shp_export"
+            if os.path.exists(shp_export_folder):
+                shutil.rmtree(shp_export_folder)
+            os.makedirs(shp_export_folder)
 
-        zip_path = os.path.join(shp_export_folder, "satellite_passes_and_aoi.zip")
-        with zipfile.ZipFile(zip_path, 'w') as zipf:
-            for base_path in [tracks_path, aoi_path]:
-                for ext in [".shp", ".shx", ".dbf", ".prj", ".cpg"]:
-                    file = base_path.replace(".shp", ext)
-                    if os.path.exists(file):
-                        zipf.write(file, arcname=os.path.basename(file))
+            tracks_path = os.path.join(shp_export_folder, "satellite_ground_tracks.shp")
+            aoi_path = os.path.join(shp_export_folder, "aoi_boundary.shp")
+            tracks_gdf.to_file(tracks_path)
+            aoi_boundary.to_file(aoi_path)
 
-    # === After spinner, show download buttons ===
-    st.download_button(
-        label="📄 Download Daily Report (.pdf)",
-        data=pdf_buffer,
-        file_name="satellite_daily_report.pdf",
-        mime="application/pdf"
-    )
+            zip_path = os.path.join(shp_export_folder, "satellite_passes_and_aoi.zip")
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                for base_path in [tracks_path, aoi_path]:
+                    for ext in [".shp", ".shx", ".dbf", ".prj", ".cpg"]:
+                        file = base_path.replace(".shp", ext)
+                        if os.path.exists(file):
+                            zipf.write(file, arcname=os.path.basename(file))
 
-    with open(zip_path, "rb") as f:
         st.download_button(
-            label="📥 Download Satellite Passes & AOI Shapefile (.zip)",
-            data=f,
-            file_name="satellite_passes_and_aoi.zip",
-            mime="application/zip"
+            label="📄 Download Daily Report (.pdf)",
+            data=pdf_buffer,
+            file_name="satellite_daily_report.pdf",
+            mime="application/pdf"
         )
 
+        with open(zip_path, "rb") as f:
+            st.download_button(
+                label="📥 Download Satellite Passes & AOI Shapefile (.zip)",
+                data=f,
+                file_name="satellite_passes_and_aoi.zip",
+                mime="application/zip"
+            )
 
 st.markdown(
     """

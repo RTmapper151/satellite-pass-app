@@ -162,49 +162,24 @@ st.markdown("This tool finds satellites that pass over your AOI and tells you ho
 
 st.header("1. Define Search Area")
 
-aoi = None
-min_lon = min_lat = max_lon = max_lat = None  # Initialize early
-uploaded_shp = st.file_uploader("Upload AOI Shapefile (.zip)", type=["zip"])
+col1, col2 = st.columns(2)
+with col1:
+    min_lon = st.number_input("Min Longitude", value=127.5)
+    min_lat = st.number_input("Min Latitude", value=25.5)
+with col2:
+    max_lon = st.number_input("Max Longitude", value=129.0)
+    max_lat = st.number_input("Max Latitude", value=27.0)
 
-if uploaded_shp:
-    with tempfile.TemporaryDirectory() as tmpdir:
-        zip_path = os.path.join(tmpdir, "uploaded.zip")
-        with open(zip_path, "wb") as f:
-            f.write(uploaded_shp.read())
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(tmpdir)
+aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
 
-        shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
-        if shp_files:
-            shp_path = os.path.join(tmpdir, shp_files[0])
-            aoi = gpd.read_file(shp_path).to_crs("EPSG:4326")
-            bounds = aoi.total_bounds
-            min_lon, min_lat, max_lon, max_lat = bounds[0], bounds[1], bounds[2], bounds[3]
-        else:
-            st.warning("Uploaded ZIP does not contain a .shp file.")
-else:
-    col1, col2 = st.columns(2)
-    with col1:
-        min_lon = st.number_input("Min Longitude", value=127.5)
-        min_lat = st.number_input("Min Latitude", value=25.5)
-    with col2:
-        max_lon = st.number_input("Max Longitude", value=129.0)
-        max_lat = st.number_input("Max Latitude", value=27.0)
-
-    if all(v is not None for v in [min_lon, min_lat, max_lon, max_lat]):
-        aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
-
-if aoi is not None:
-    with st.expander("🗺️ Preview AOI Bounding Box"):
-        fig, ax = plt.subplots(figsize=(6, 6))
-        aoi.boundary.plot(ax=ax, edgecolor='blue', linewidth=2)
-        ax.set_title("AOI Preview")
-        bounds = aoi.total_bounds
-        ax.set_xlim(bounds[0] - 1, bounds[2] + 1)
-        ax.set_ylim(bounds[1] - 1, bounds[3] + 1)
-        st.pyplot(fig)
-else:
-    st.info("Upload a valid shapefile or enter bounding box coordinates.")
+with st.expander("🗺️ Preview AOI Bounding Box"):
+    fig, ax = plt.subplots(figsize=(6, 6))
+    aoi.boundary.plot(ax=ax, edgecolor='blue', linewidth=2)
+    ax.set_title("AOI Preview")
+    bounds = aoi.total_bounds
+    ax.set_xlim(bounds[0] - 1, bounds[2] + 1)
+    ax.set_ylim(bounds[1] - 1, bounds[3] + 1)
+    st.pyplot(fig)
 
 
 

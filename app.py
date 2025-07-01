@@ -396,6 +396,7 @@ with tabs[1]:
 
         ### Contact
         - Created by Steven Littel
+        - GitHub: https://github.com/RTmapper151/satellite-pass-app/tree/main
         - For questions or feedback, please contact me at scl323@nau.edu
         """
     )

@@ -11,6 +11,18 @@ The goal of this project is to identify Earth observation satellite passes over 
 
 ## Updates
 
+### 2025-07-01
+* Added tabbed layout with Main and About tabs
+* Header stays fixed above tabs
+* Added progress bar with step descriptions during analysis
+* Added spinner while generating PDF and shapefile downloads
+* Added AOI preview map after coordinate input
+* Show last run summary in expandable section
+* Cleaned up button placement and flow
+* Added clear download buttons for PDF and shapefile zip
+* Created About tab with API info, disclaimers, and contact details
+
+
 ### 2025-06-29  
 Focused on organizing and documenting. I started by updating the README and digital journal to reflect how far the project has come. With the core analysis in good shape reliably detecting satellite passes using bounding boxes and swath widths —the priority now shifts to refining the user interface. The Streamlit app is fully functional but needs more polish and better user flow. I’m outlining specific UI/UX tasks to work through next so I can move into a final cleanup phase.
 

@@ -188,51 +188,6 @@ if st.session_state["last_run"]:
         for name, time in st.session_state["last_run"]["sats"]:
             st.write(f"- {name} at {time}")
 
-# --- Presets (Session state) ---
-if "presets" not in st.session_state:
-    st.session_state["presets"] = {}
-
-preset_names = list(st.session_state["presets"].keys())
-
-with st.expander("⭐ Presets"):
-    selected_preset = st.selectbox("Load Preset", options=[""] + preset_names, index=0)
-
-    # Load preset if selected
-    if selected_preset:
-        preset = st.session_state["presets"][selected_preset]
-        min_lon = preset["min_lon"]
-        min_lat = preset["min_lat"]
-        max_lon = preset["max_lon"]
-        max_lat = preset["max_lat"]
-        sat_type = preset["sat_type"]
-        swath_km = preset["swath_km"]
-        interval = preset["interval"]
-        st.success(f"✅ Loaded preset: {selected_preset}")
-
-    # Save new preset
-    with st.form("save_preset_form"):
-        preset_name = st.text_input("Preset Name")
-        save_btn = st.form_submit_button("Save Current Settings as Preset")
-        if save_btn and preset_name:
-            st.session_state["presets"][preset_name] = {
-                "min_lon": min_lon,
-                "min_lat": min_lat,
-                "max_lon": max_lon,
-                "max_lat": max_lat,
-                "sat_type": sat_type,
-                "swath_km": swath_km,
-                "interval": interval
-            }
-            st.success(f"💾 Saved preset: {preset_name}")
-
-    # Delete preset
-    if preset_names:
-        del_name = st.selectbox("Delete Preset", options=preset_names)
-        if st.button("❌ Delete Selected Preset"):
-            del st.session_state["presets"][del_name]
-            st.warning(f"Deleted preset: {del_name}")
-
-
 st.header("2. Select Satellite Group and Parameters")
 group_options = {
     "Active": "active",

@@ -363,4 +363,3 @@ st.markdown(
     This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
     """
 )
-```

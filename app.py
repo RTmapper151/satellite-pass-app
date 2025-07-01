@@ -171,6 +171,18 @@ with col2:
 
 aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
 
+# Initialize last_run in session state if missing
+if "last_run" not in st.session_state:
+    st.session_state["last_run"] = None
+
+# Show last run summary if available
+if st.session_state["last_run"]:
+    with st.expander("🛰️ Last Run Summary"):
+        st.write(f"Satellites Over AOI: {st.session_state['last_run']['count']}")
+        for name, time in st.session_state["last_run"]["sats"]:
+            st.write(f"- {name} at {time}")
+
+
 st.header("2. Select Satellite Group and Parameters")
 group_options = {
     "Active": "active",
@@ -232,6 +244,13 @@ if st.button("Run Analysis"):
         st.warning("No satellites passed over the AOI.")
 
     st.pyplot(fig)
+
+    # Save last run info to session state
+    st.session_state["last_run"] = {
+        "count": len(passing_sats),
+        "sats": passing_sats
+    }
+
 
     # === File outputs ===
     pdf_buffer = create_pdf_report_text_and_image(tle_group, year, month, day, swath_km, tle_source, passing_sats, fig)

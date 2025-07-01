@@ -17,6 +17,27 @@ from fpdf import FPDF
 from PIL import Image
 import io
 
+def preview_aoi_map(aoi):
+    fig = plt.figure(figsize=(6,6))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+
+    # Basemap layers
+    ax.coastlines()
+    ax.add_feature(cfeature.BORDERS, linestyle=':')
+    ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
+    ax.add_feature(cfeature.OCEAN, alpha=0.1)
+
+    # Plot AOI boundary
+    aoi.boundary.plot(ax=ax, color='blue', linewidth=2, label='AOI')
+
+    # Set extent with padding
+    bounds = aoi.total_bounds
+    ax.set_extent([bounds[0]-2, bounds[2]+2, bounds[1]-2, bounds[3]+2], crs=ccrs.PlateCarree())
+
+    ax.set_title("AOI Preview", fontsize=12)
+    plt.tight_layout()
+    return fig
+
 def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_source, passing_sats, fig):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -170,6 +191,8 @@ with col2:
     max_lat = st.number_input("Max Latitude", value=27.0)
 
 aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
+
+st.pyplot(preview_aoi_map(aoi))
 
 # Initialize last_run in session state if missing
 if "last_run" not in st.session_state:

@@ -395,8 +395,8 @@ with tabs[1]:
         - The results are visualized on a map.
 
         ### Contact
-        Created by Steven Littel
-        For questions or feedback, please contact me at scl323@nau.edu
+        - Created by Steven Littel
+        - For questions or feedback, please contact me at scl323@nau.edu
         """
     )
 
@@ -409,6 +409,6 @@ st.markdown(
     the quality and update frequency of CelesTrak's datasets. Only satellites listed in the selected 
     CelesTrak group will be included in the analysis.
 
-    This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
+    This tool does **not** query all satellites in orbit only those published and maintained by CelesTrak.
     """
 )

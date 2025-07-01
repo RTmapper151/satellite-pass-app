@@ -395,7 +395,7 @@ with tabs[1]:
         - The results are visualized on a map.
 
         ### Discussion
-        - This tool focuses on satellites in Low Earth Orbit (LEO) because these satellites regularly pass over specific areas on Earth within short time intervals. Their orbits are close to the surface—typically between 160 and 2,000 km altitude—which allows us to calculate exactly when and where they will pass over your area of interest. This makes the predictions useful for applications like Earth observation, communication, and environmental monitoring.
+        - This tool focuses on satellites in Low Earth Orbit (LEO) because these satellites regularly pass over specific areas on Earth within short time intervals. Their orbits are close to the surface—typically between 160 and 2,000 km altitude which allows us to calculate exactly when and where they will pass over your area of interest. This makes the predictions useful for applications like Earth observation, communication, and environmental monitoring.
         - Geostationary Earth Orbit (GEO) satellites stay fixed over the equator at about 35,786 km altitude, maintaining a constant position relative to the Earth's surface. Since GEO satellites don’t move across the sky from a ground observer’s viewpoint, they don’t have "passes" like LEO satellites do. Instead, their coverage area remains broad and static. Because of this, we don’t include GEO satellites in this tool, since analyzing their coverage requires different methods. We focus on LEO satellites because their changing positions let us predict passes precisely using Two-Line Element (TLE) data.
 
         ### Contact

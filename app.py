@@ -175,7 +175,6 @@ def plot_results(aoi, plot_data, swath_width_km):
     plt.tight_layout()
     return fig
 
-
 # --- Streamlit UI setup ---
 st.title("Satellite Pass Finder")
 st.markdown("This tool finds satellites that pass over your AOI and tells you how it got the data.")
@@ -357,3 +356,4 @@ st.markdown(
     This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
     """
 )
+

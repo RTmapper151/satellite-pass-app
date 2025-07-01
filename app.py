@@ -344,7 +344,8 @@ with tabs[1]:
         - The results are visualized on a map.
 
         ### Contact
-        For questions or feedback, please contact: [your.email@example.com](mailto:your.email@example.com)
+        Created by Steven Littel
+        For questions or feedback, please contact me at: [scl323@nau.cedu]
         """
     )
 

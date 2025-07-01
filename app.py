@@ -1,4 +1,3 @@
-```python
 import streamlit as st  # Build interactive UI
 import geopandas as gpd  # Handle geospatial data
 import matplotlib.pyplot as plt  # Plot maps

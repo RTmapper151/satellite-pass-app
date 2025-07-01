@@ -220,17 +220,40 @@ swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
 interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)
 
 if st.button("Run Analysis"):
-    with st.spinner("Running analysis..."):
-        year, month, day = date.year, date.month, date.day
-        tle_folder = "./.cache_tle"
-        tle_path, tle_source = download_tle(tle_group, tle_folder)
+    progress_bar = st.progress(0)
+    status_text = st.empty()
 
-        satellites = load.tle_file(tle_path)
-        times = generate_times(year, month, day, interval)
-        swath_width_m = swath_km * 1000
+    year, month, day = date.year, date.month, date.day
+    tle_folder = "./.cache_tle"
 
-        passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
-        fig = plot_results(aoi, plot_data, swath_km)
+    # Step 1: Download TLE
+    status_text.text("Downloading TLE data...")
+    tle_path, tle_source = download_tle(tle_group, tle_folder)
+    progress_bar.progress(20)
+
+    # Step 2: Load satellites
+    status_text.text("Loading satellite data...")
+    satellites = load.tle_file(tle_path)
+    progress_bar.progress(40)
+
+    # Step 3: Generate time intervals
+    status_text.text("Generating time intervals...")
+    times = generate_times(year, month, day, interval)
+    progress_bar.progress(60)
+
+    # Step 4: Analyze satellite passes
+    status_text.text("Finding satellites passing over AOI...")
+    swath_width_m = swath_km * 1000
+    passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
+    progress_bar.progress(80)
+
+    # Step 5: Plot results
+    status_text.text("Plotting results...")
+    fig = plot_results(aoi, plot_data, swath_km)
+    progress_bar.progress(100)
+
+    status_text.empty()
+    progress_bar.empty()
 
     st.subheader("3. Results")
     st.write(tle_source)
@@ -287,6 +310,7 @@ if st.button("Run Analysis"):
             file_name="satellite_passes_and_aoi.zip",
             mime="application/zip"
         )
+
 
 
 

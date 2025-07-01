@@ -1,3 +1,4 @@
+```python
 import streamlit as st  # Build interactive UI
 import geopandas as gpd  # Handle geospatial data
 import matplotlib.pyplot as plt  # Plot maps
@@ -12,21 +13,28 @@ import shutil
 import pandas as pd
 import zipfile
 import tempfile
+import os
 from fpdf import FPDF
-import io
 from PIL import Image
+import io
 
-# --- Utility Functions ---
 def preview_aoi_map(aoi):
     fig = plt.figure(figsize=(6,6))
     ax = plt.axes(projection=ccrs.PlateCarree())
+
+    # Basemap layers
     ax.coastlines()
     ax.add_feature(cfeature.BORDERS, linestyle=':')
     ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
     ax.add_feature(cfeature.OCEAN, alpha=0.1)
+
+    # Plot AOI boundary
     aoi.boundary.plot(ax=ax, color='blue', linewidth=2, label='AOI')
+
+    # Set extent with padding
     bounds = aoi.total_bounds
     ax.set_extent([bounds[0]-2, bounds[2]+2, bounds[1]-2, bounds[3]+2], crs=ccrs.PlateCarree())
+
     ax.set_title("AOI Preview", fontsize=12)
     plt.tight_layout()
     return fig
@@ -35,6 +43,8 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
+
+    # Title and metadata as before...
     pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, "Satellite Pass Daily Report", ln=True, align='C')
     pdf.ln(10)
@@ -44,6 +54,7 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
     pdf.multi_cell(0, 10, f"Date: {year}-{month:02d}-{day:02d}")
     pdf.multi_cell(0, 10, f"Swath Width: {swath_km} km")
     pdf.ln(5)
+
     if passing_sats:
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, f"{len(passing_sats)} satellite(s) passed over the AOI:", ln=True)
@@ -53,13 +64,21 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
     else:
         pdf.multi_cell(0, 10, "No satellites passed over the area.")
     pdf.ln(10)
+
+    # Save figure to a temporary PNG file
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
         temp_img_path = tmpfile.name
         fig.savefig(temp_img_path, format='PNG', dpi=300)
+
+    # Add image to PDF
     page_width = pdf.w - 2*pdf.l_margin
     pdf.image(temp_img_path, x=pdf.l_margin, w=page_width)
+
+    # Clean up the temp file
     os.remove(temp_img_path)
-    pdf_output = pdf.output(dest='S').encode('latin1')
+
+    # Output PDF to bytes buffer
+    pdf_output = pdf.output(dest='S').encode('latin1')  # get PDF as bytes string
     pdf_bytes = io.BytesIO(pdf_output)
     pdf_bytes.seek(0)
     return pdf_bytes
@@ -68,79 +87,107 @@ def show_data_links(sat_name):
     search_url = f"https://www.google.com/search?q={sat_name.replace(' ', '+')}+satellite+data+download"
     st.markdown(f"🔎 [Search for data from {sat_name}]({search_url})")
 
+# --- Downloader with caching ---
 def download_tle(group, save_folder, max_days=1.0):
-    os.makedirs(save_folder, exist_ok=True)
+    """Download or load cached TLE data for the specified group."""
+    os.makedirs(save_folder, exist_ok=True)  # Ensure folder exists
     filename = f"{group}.tle"
     filepath = os.path.join(save_folder, filename)
     base_url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=TLE'
     url = base_url.format(group=group)
+
     if not load.exists(filepath) or load.days_old(filepath) >= max_days:
-        load.download(url, filename=filepath)
+        load.download(url, filename=filepath)  # Fetch new data
         source = f"Downloaded fresh TLE from: {url}"
     else:
         source = f"Loaded cached TLE file: {filepath}"
     return filepath, source
 
+# --- Create AOI from bounding box ---
 def create_aoi(min_lon, min_lat, max_lon, max_lat):
+    """Create a GeoDataFrame representing the AOI bounding box."""
     return gpd.GeoDataFrame({'geometry': [box(min_lon, min_lat, max_lon, max_lat)]}, crs="EPSG:4326")
 
+# --- Generate time intervals ---
 def generate_times(year, month, day, interval_minutes):
+    """Generate a Skyfield time array for the given day at specified intervals."""
     ts = load.timescale()
     minutes = np.arange(0, 24*60, interval_minutes)
     return ts.utc(year, month, day, 0, minutes)
 
+# --- Analyze satellite passes ---
 def find_passing_sats(satellites, times, aoi, swath_width_m):
+    """Find satellites passing over the AOI with given swath width."""
     passing_sats = []
-    colors = plt.cm.get_cmap('tab20', len(satellites))
-    buffer_radius = swath_width_m / 2
+    colors = plt.cm.get_cmap('tab20', len(satellites))  # Assign colors for plotting
+    buffer_radius = swath_width_m / 2  # Buffer half swath width for intersection
     plot_data = []
+
     for i, sat in enumerate(satellites):
-        subpoint = sat.at(times).subpoint()
+        subpoint = sat.at(times).subpoint()  # Compute subpoints for satellite over time
         lats = subpoint.latitude.degrees
         lons = subpoint.longitude.degrees
-        points = [Point(lon, lat) for lon, lat in zip(lons, lats)]
-        sat_gdf = gpd.GeoDataFrame({'geometry': points}, crs="EPSG:4326")
-        sat_gdf_3857 = sat_gdf.to_crs("EPSG:3857")
-        swath_buffers = sat_gdf_3857.buffer(buffer_radius)
-        swath_gdf = gpd.GeoDataFrame(geometry=swath_buffers, crs="EPSG:3857").to_crs("EPSG:4326")
-        intersect = gpd.sjoin(swath_gdf, aoi, how='inner', predicate='intersects')
+        points = [Point(lon, lat) for lon, lat in zip(lons, lats)]  # Convert to Point geometries
+
+        sat_gdf = gpd.GeoDataFrame({'geometry': points}, crs="EPSG:4326")  # Create GeoDataFrame
+        sat_gdf_3857 = sat_gdf.to_crs("EPSG:3857")  # Project to metric CRS for buffering
+        swath_buffers = sat_gdf_3857.buffer(buffer_radius)  # Buffer points by swath radius
+        swath_gdf = gpd.GeoDataFrame(geometry=swath_buffers, crs="EPSG:3857").to_crs("EPSG:4326")  # Back to lat/lon
+
+        intersect = gpd.sjoin(swath_gdf, aoi, how='inner', predicate='intersects')  # Check intersection with AOI
+
         if not intersect.empty:
-            passing_time = times[intersect.index[0]].utc_iso()
+            passing_time = times[intersect.index[0]].utc_iso()  # Get first intersection time
             passing_sats.append((sat.name, passing_time))
-            trace_line = LineString([(pt.x, pt.y) for pt in points])
+            trace_line = LineString([(pt.x, pt.y) for pt in points])  # Create ground track line
             plot_data.append({
                 'swath_gdf': swath_gdf,
                 'trace_line': trace_line,
                 'color': colors(i),
                 'name': sat.name
             })
+
     return passing_sats, plot_data
 
+# --- Plot map of satellite passes ---
 def plot_results(aoi, plot_data, swath_width_km):
     fig = plt.figure(figsize=(10, 7))
     ax = plt.axes(projection=ccrs.PlateCarree())
+
+    # Basemap layers
     ax.coastlines()
     ax.add_feature(cfeature.BORDERS, linestyle=':')
     ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
     ax.add_feature(cfeature.OCEAN, alpha=0.1)
+
+    # Plot AOI boundary
     aoi.boundary.plot(ax=ax, color='black', linewidth=2, label='AOI')
+
+    # Plot swaths and traces
     for item in plot_data:
         item['swath_gdf'].plot(ax=ax, color='red', alpha=0.4)
         ax.plot(*item['trace_line'].xy, color=item['color'], linewidth=1.5, label=item['name'])
+
+    # Set bounds
     bounds = aoi.total_bounds
     ax.set_extent([bounds[0] - 2, bounds[2] + 2, bounds[1] - 2, bounds[3] + 2], crs=ccrs.PlateCarree())
+
     ax.set_title("Satellite Passes", fontsize=14)
     ax.legend(fontsize=8, loc='lower left')
     plt.tight_layout()
     return fig
 
-# --- Tabs Layout ---
-tab1, tab2 = st.tabs(["Run Analysis", "About"])
+# --- Main Streamlit UI setup ---
+st.title("Satellite Pass Finder")
+st.markdown("This tool finds satellites that pass over your AOI and tells you how it got the data.")
 
-with tab1:
-    st.title("Satellite Pass Finder")
-    st.markdown("This tool finds satellites that pass over your AOI and tells you how it got the data.")
+# --- Add a fixed page header above the tabs ---
+st.markdown("## Select a Tab Below to Begin")
 
+# --- Tabs ---
+tabs = st.tabs(["Main", "About"])
+
+with tabs[0]:
     st.header("1. Define Search Area")
     col1, col2 = st.columns(2)
     with col1:
@@ -151,21 +198,39 @@ with tab1:
         max_lat = st.number_input("Max Latitude", value=27.0)
 
     aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
+
     st.pyplot(preview_aoi_map(aoi))
 
-    if "last_run" not in st.session_state:
-        st.session_state["last_run"] = None
-    if st.session_state["last_run"]:
-        with st.expander("🛰️ Last Run Summary"):
-            st.write(f"Satellites Over AOI: {st.session_state['last_run']['count']}")
-            for name, time in st.session_state["last_run"]["sats"]:
-                st.write(f"- {name} at {time}")
-
     st.header("2. Select Satellite Group and Parameters")
-    group_options = {"Active": "active", "Earth Observation": "resource", "Scientific": "science", "CubeSats": "cubesat", "Weather": "weather", "GOES": "goes", "NOAA": "noaa", "Planet": "planet", "Last 30 Days": "last-30-days"}
-    group_descriptions = {"Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.", "Weather": "Satellites that provide meteorological data and atmospheric monitoring.", "CubeSats": "Miniaturized satellites often used for scientific and academic purposes.", "Scientific": "idk science stuff probably.", "NOAA": "National Oceanic and Atmospheric Administration satellites, mainly used for weather and ocean monitoring.", "GOES": "Geostationary Operational Environmental Satellites for continuous weather observation over the Americas.", "GPS": "Navigation satellites in the Global Positioning System constellation.", "Planet": "planet.com", "Iridium": "Communications satellites providing global voice and data coverage.", "Geodetic": "Satellites used for measuring Earth's shape, gravity, and geophysical phenomena.", "Last 30 Days": "Satellites Launched in the last 30 Days.", "Active": "All currently operational satellites tracked by CelesTrak."}
+    group_options = {
+        "Active": "active",
+        "Earth Observation": "resource",
+        "Scientific": "science",
+        "CubeSats": "cubesat",
+        "Weather": "weather",
+        "GOES": "goes",
+        "NOAA": "noaa",
+        "Planet": "planet",
+        "Last 30 Days": "last-30-days"
+    }
+    group_descriptions = {
+        "Earth Observation": "Satellites used for imaging, environmental monitoring, and Earth resource mapping.",
+        "Weather": "Satellites that provide meteorological data and atmospheric monitoring.",
+        "CubeSats": "Miniaturized satellites often used for scientific and academic purposes.",
+        "Scientific": "idk science stuff probably.",
+        "NOAA": "National Oceanic and Atmospheric Administration satellites, mainly used for weather and ocean monitoring.",
+        "GOES": "Geostationary Operational Environmental Satellites for continuous weather observation over the Americas.",
+        "GPS": "Navigation satellites in the Global Positioning System constellation.",
+        "Planet": "planet.com",
+        "Iridium": "Communications satellites providing global voice and data coverage.",
+        "Geodetic": "Satellites used for measuring Earth's shape, gravity, and geophysical phenomena.",
+        "Last 30 Days": "Satellites Launched in the last 30 Days.",
+        "Active": "All currently operational satellites tracked by CelesTrak."
+    }
+
     sat_type = st.selectbox("Satellite Group", options=list(group_options.keys()))
     st.caption(f"📘 **Description:** {group_descriptions.get(sat_type, 'No description available.')}")
+
     tle_group = group_options[sat_type]
 
     date = st.date_input("Date", value=dt_date.today())
@@ -178,22 +243,33 @@ with tab1:
 
         year, month, day = date.year, date.month, date.day
         tle_folder = "./.cache_tle"
+
+        # Step 1: Download TLE
         status_text.text("Downloading TLE data...")
         tle_path, tle_source = download_tle(tle_group, tle_folder)
         progress_bar.progress(20)
+
+        # Step 2: Load satellites
         status_text.text("Loading satellite data...")
         satellites = load.tle_file(tle_path)
         progress_bar.progress(40)
+
+        # Step 3: Generate time intervals
         status_text.text("Generating time intervals...")
         times = generate_times(year, month, day, interval)
         progress_bar.progress(60)
+
+        # Step 4: Analyze satellite passes
         status_text.text("Finding satellites passing over AOI...")
         swath_width_m = swath_km * 1000
         passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
         progress_bar.progress(80)
+
+        # Step 5: Plot results
         status_text.text("Plotting results...")
         fig = plot_results(aoi, plot_data, swath_km)
         progress_bar.progress(100)
+
         status_text.empty()
         progress_bar.empty()
 
@@ -206,20 +282,31 @@ with tab1:
                 show_data_links(name)
         else:
             st.warning("No satellites passed over the AOI.")
+
         st.pyplot(fig)
 
-        with st.spinner("Preparing PDF and shapefiles..."):
+        # === File outputs ===
+        with st.spinner("Preparing PDF and Shapefile downloads..."):
             pdf_buffer = create_pdf_report_text_and_image(tle_group, year, month, day, swath_km, tle_source, passing_sats, fig)
-            st.download_button(label="📄 Download Daily Report (.pdf)", data=pdf_buffer, file_name="satellite_daily_report.pdf", mime="application/pdf")
 
+            st.download_button(
+                label="📄 Download Daily Report (.pdf)",
+                data=pdf_buffer,
+                file_name="satellite_daily_report.pdf",
+                mime="application/pdf"
+            )
+
+            # === Shapefile export: satellite ground tracks + AOI boundary ===
             lines = []
             for item in plot_data:
                 lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
             tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
+
             aoi_boundary = gpd.GeoDataFrame({'geometry': aoi.geometry.boundary}, crs="EPSG:4326")
 
             shp_export_folder = "./temp_shp_export"
-            if os.path.exists(shp_export_folder): shutil.rmtree(shp_export_folder)
+            if os.path.exists(shp_export_folder):
+                shutil.rmtree(shp_export_folder)
             os.makedirs(shp_export_folder)
 
             tracks_path = os.path.join(shp_export_folder, "satellite_ground_tracks.shp")
@@ -236,44 +323,45 @@ with tab1:
                             zipf.write(file, arcname=os.path.basename(file))
 
             with open(zip_path, "rb") as f:
-                st.download_button(label="📥 Download Satellite Passes & AOI Shapefile (.zip)", data=f, file_name="satellite_passes_and_aoi.zip", mime="application/zip")
+                st.download_button(
+                    label="📥 Download Satellite Passes & AOI Shapefile (.zip)",
+                    data=f,
+                    file_name="satellite_passes_and_aoi.zip",
+                    mime="application/zip"
+                )
 
-with tab2:
-    st.title("About This App")
-    st.markdown("""
-    **Satellite Pass Finder** helps users identify Earth observation satellites that passed over a user-defined Area of Interest (AOI) on a selected date.
+with tabs[1]:
+    st.header("About This App")
+    st.markdown(
+        """
+        ### Data Source and API
+        This application retrieves satellite orbital data exclusively from [CelesTrak](https://celestrak.org/), 
+        a public source of satellite TLE (Two-Line Element) data.
 
+        ### How the Analysis Works
+        - The user defines an Area of Interest (AOI) using a bounding box.
+        - Satellite groups are selected based on categories provided by CelesTrak.
+        - The app downloads or loads cached TLE data for the selected satellite group.
+        - It calculates satellite positions over the selected day at specified time intervals.
+        - For each satellite, it buffers its ground track points by the selected swath width and checks for intersection with the AOI.
+        - Satellites passing over the AOI are identified and displayed along with their pass times.
+        - The results are visualized on a map.
+
+        ### Contact
+        For questions or feedback, please contact: [your.email@example.com](mailto:your.email@example.com)
+        """
+    )
+
+st.markdown(
+    """
     ---
-    ### 🛰️ How It Works
+    📢 **Disclaimer**
 
-    1. **Bounding Box AOI**: You input lat/lon boundaries.
-    2. **Satellite Group Selection**: Pulls TLE data from [CelesTrak](https://celestrak.org/).
-    3. **Time Interval**: Intervals are used to generate subpoints for satellite locations.
-    4. **Swath Width**: Determines if a satellite "sees" your AOI.
-    5. **Intersection Check**: Buffers satellite paths and checks if they intersect your AOI.
-    6. **Outputs**:
-       - PDF report (with metadata, pass times, map)
-       - Downloadable shapefiles (ground tracks + AOI)
+    The accuracy of pass predictions depends on 
+    the quality and update frequency of CelesTrak's datasets. Only satellites listed in the selected 
+    CelesTrak group will be included in the analysis.
 
-    ---
-    ### 🔗 Data & Tools Used
-
-    - [CelesTrak TLE API](https://celestrak.org/NORAD/elements/)
-    - Skyfield (orbital mechanics)
-    - GeoPandas & Shapely (geospatial analysis)
-    - Cartopy (mapping)
-    - FPDF (PDF generation)
-    - Streamlit (UI)
-
-    ---
-    ### 📬 Contact
-
-    Built by: **Your Name**  
-    Email: you@example.com  
-    GitHub: [github.com/yourname](https://github.com/yourname)
-
-    ---
-    ### ⚠️ Disclaimer
-
-    This tool uses public orbital data. Results are approximate and rely on the accuracy of TLE data. Satellite visibility does not guarantee data availability.
-    """)
+    This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
+    """
+)
+```

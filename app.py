@@ -220,16 +220,17 @@ swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
 interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)
 
 if st.button("Run Analysis"):
-    year, month, day = date.year, date.month, date.day
-    tle_folder = "./.cache_tle"
-    tle_path, tle_source = download_tle(tle_group, tle_folder)
+    with st.spinner("Running analysis..."):
+        year, month, day = date.year, date.month, date.day
+        tle_folder = "./.cache_tle"
+        tle_path, tle_source = download_tle(tle_group, tle_folder)
 
-    satellites = load.tle_file(tle_path)
-    times = generate_times(year, month, day, interval)
-    swath_width_m = swath_km * 1000
+        satellites = load.tle_file(tle_path)
+        times = generate_times(year, month, day, interval)
+        swath_width_m = swath_km * 1000
 
-    passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
-    fig = plot_results(aoi, plot_data, swath_km)
+        passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
+        fig = plot_results(aoi, plot_data, swath_km)
 
     st.subheader("3. Results")
     st.write(tle_source)
@@ -238,19 +239,10 @@ if st.button("Run Analysis"):
         for name, t in passing_sats:
             st.write(f"🛰️ {name} at {t}")
             show_data_links(name)
-
-
     else:
         st.warning("No satellites passed over the AOI.")
 
     st.pyplot(fig)
-
-    # Save last run info to session state
-    st.session_state["last_run"] = {
-        "count": len(passing_sats),
-        "sats": passing_sats
-    }
-
 
     # === File outputs ===
     pdf_buffer = create_pdf_report_text_and_image(tle_group, year, month, day, swath_km, tle_source, passing_sats, fig)
@@ -295,6 +287,7 @@ if st.button("Run Analysis"):
             file_name="satellite_passes_and_aoi.zip",
             mime="application/zip"
         )
+
 
 
 

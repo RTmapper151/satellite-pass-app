@@ -225,4 +225,116 @@ with tab_params:
         progress_bar.progress(20)
 
         status_text.text("Loading satellite data...")
-       
+        satellites = load.tle_file(tle_path)
+        progress_bar.progress(40)
+
+        status_text.text("Generating time intervals...")
+        times = generate_times(year, month, day, interval)
+        progress_bar.progress(60)
+
+        status_text.text("Finding satellites passing over AOI...")
+        swath_width_m = swath_km * 1000
+        # Use AOI from session state in case user updated it
+        aoi = st.session_state.get("aoi")
+        passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
+        progress_bar.progress(80)
+
+        status_text.text("Plotting results...")
+        fig = plot_results(aoi, plot_data, swath_km)
+        progress_bar.progress(100)
+
+        status_text.empty()
+        progress_bar.empty()
+
+        # Store results for Results tab
+        st.session_state["last_run"] = {
+            "passing_sats": passing_sats,
+            "plot_data": plot_data,
+            "fig": fig,
+            "tle_source": tle_source,
+            "year": year,
+            "month": month,
+            "day": day,
+            "swath_km": swath_km,
+            "tle_group": tle_group,
+            "aoi": aoi
+        }
+
+with tab_results:
+    st.header("3. Results")
+    if "last_run" not in st.session_state or st.session_state["last_run"] is None:
+        st.info("Run the analysis in the 'Parameters' tab to see results here.")
+    else:
+        last_run = st.session_state["last_run"]
+
+        st.write(last_run["tle_source"])
+        passing_sats = last_run["passing_sats"]
+        fig = last_run["fig"]
+
+        if passing_sats:
+            st.success(f"{len(passing_sats)} satellite(s) passed over the AOI.")
+            for name, t in passing_sats:
+                st.write(f"🛰️ {name} at {t}")
+                show_data_links(name)
+        else:
+            st.warning("No satellites passed over the AOI.")
+
+        st.pyplot(fig)
+
+        pdf_buffer = create_pdf_report_text_and_image(
+            last_run["tle_group"], last_run["year"], last_run["month"], last_run["day"],
+            last_run["swath_km"], last_run["tle_source"], passing_sats, fig
+        )
+        st.download_button(
+            label="📄 Download Daily Report (.pdf)",
+            data=pdf_buffer,
+            file_name="satellite_daily_report.pdf",
+            mime="application/pdf"
+        )
+
+        lines = []
+        for item in last_run["plot_data"]:
+            lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
+        tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
+
+        aoi_boundary = gpd.GeoDataFrame({'geometry': last_run["aoi"].geometry.boundary}, crs="EPSG:4326")
+
+        shp_export_folder = "./temp_shp_export"
+        if os.path.exists(shp_export_folder):
+            shutil.rmtree(shp_export_folder)
+        os.makedirs(shp_export_folder)
+
+        tracks_path = os.path.join(shp_export_folder, "satellite_ground_tracks.shp")
+        aoi_path = os.path.join(shp_export_folder, "aoi_boundary.shp")
+        tracks_gdf.to_file(tracks_path)
+        aoi_boundary.to_file(aoi_path)
+
+        zip_path = os.path.join(shp_export_folder, "satellite_passes_and_aoi.zip")
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for base_path in [tracks_path, aoi_path]:
+                for ext in [".shp", ".shx", ".dbf", ".prj", ".cpg"]:
+                    file = base_path.replace(".shp", ext)
+                    if os.path.exists(file):
+                        zipf.write(file, arcname=os.path.basename(file))
+
+        with open(zip_path, "rb") as f:
+            st.download_button(
+                label="📥 Download Satellite Passes & AOI Shapefile (.zip)",
+                data=f,
+                file_name="satellite_passes_and_aoi.zip",
+                mime="application/zip"
+            )
+
+st.markdown(
+    """
+    ---
+    📢 **Disclaimer**
+
+    This application retrieves satellite orbital data exclusively from [CelesTrak](https://celestrak.org/), 
+    a public source of satellite TLE (Two-Line Element) data. The accuracy of pass predictions depends on 
+    the quality and update frequency of CelesTrak's datasets. Only satellites listed in the selected 
+    CelesTrak group will be included in the analysis.
+
+    This tool does **not** query all satellites in orbit — only those published and maintained by CelesTrak.
+    """
+)

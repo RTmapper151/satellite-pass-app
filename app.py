@@ -180,9 +180,6 @@ def plot_results(aoi, plot_data, swath_width_km):
 st.title("Satellite Pass Finder")
 st.markdown("This tool finds satellites that pass over your AOI and tells you how it got the data.")
 
-# --- Add a fixed page header above the tabs ---
-st.markdown("## Select a Tab Below to Begin")
-
 # --- Tabs ---
 tabs = st.tabs(["Main", "About"])
 

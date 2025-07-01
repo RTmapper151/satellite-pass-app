@@ -163,6 +163,7 @@ st.markdown("This tool finds satellites that pass over your AOI and tells you ho
 st.header("1. Define Search Area")
 
 aoi = None
+min_lon = min_lat = max_lon = max_lat = None  # Define defaults to avoid undefined errors
 uploaded_shp = st.file_uploader("Upload AOI Shapefile (.zip)", type=["zip"])
 
 if uploaded_shp is not None:
@@ -187,7 +188,10 @@ else:
     with col2:
         max_lon = st.number_input("Max Longitude", value=129.0)
         max_lat = st.number_input("Max Latitude", value=27.0)
+
+if aoi is None and all(v is not None for v in [min_lon, min_lat, max_lon, max_lat]):
     aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
+
 
 
 st.header("2. Select Satellite Group and Parameters")

@@ -7,6 +7,12 @@ The goal of this project is to identify Earth observation satellite passes over 
 
 ## Latest Branch (Usable): data-sources
 
+
+---
+
+#Errors:
+
+1. Download a .pdf reset analysis.
 ---
 
 ## Updates

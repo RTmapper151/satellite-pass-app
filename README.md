@@ -128,6 +128,58 @@ The goal of this project is to identify Earth observation satellite passes over 
 
 ## Updates
 
+## New Schedule
+
+## July 9 - 10: Advanced AOI Input & Map Preview  
+- Implement file upload widget for AOI shapefiles  
+- Write code to read uploaded shapefile and extract bounding box  
+- Develop function to display AOI preview map using Cartopy  
+- Adjust map zoom and layout for clear visualization  
+
+## July 11 - 12: Multiple AOI Support  
+- Modify input to accept multiple AOI shapefiles  
+- Loop through each AOI and run satellite pass analysis  
+- Create summary table or list showing passes per AOI  
+- Add UI controls to select or toggle visibility of AOIs  
+
+## July 13 - 14: Satellite Filtering & Favorites  
+- Add input fields or dropdowns to filter satellite results by name/time/duration  
+- Create a favorites list data structure and UI for quick satellite selection  
+- Implement session storage for favorites or save to file if possible  
+
+## July 15 - 16: Enhanced Visualization  
+- Integrate Folium or Plotly map for interactive satellite pass display  
+- Add tooltips showing satellite altitude, speed, or other metadata  
+- Add toggle switch to show or hide satellite swath buffers on the map  
+
+## July 17 - 18: Report Improvements  
+- Redesign PDF report layout for better readability and formatting  
+- Add sections summarizing user inputs and AOI information in the report  
+- Generate and embed charts or statistics related to satellite passes  
+
+## July 19 - 20: Shapefile & Data Export  
+- Implement CSV and GeoJSON export options for satellite pass points  
+- Refine shapefile export to include all necessary component files zipped properly  
+- Add UI option to export raw or filtered satellite pass data  
+
+## July 21 - 22: UI/UX Polish & Testing  
+- Add loading spinners and progress bars during long-running tasks  
+- Adjust UI layouts for responsiveness on different screen sizes  
+- Perform end-to-end testing of all features and fix discovered bugs  
+- Add detailed comments and documentation to code  
+
+## July 23 - 24: Final Review & Documentation  
+- Write and finalize README with detailed feature descriptions and usage instructions  
+- Draft project report covering methodology, results, and reflections  
+- Create presentation slides and practice 5-minute presentation delivery  
+
+## July 25: Submission Day  
+- Conduct final full test of the app and fix any last-minute issues  
+- Organize and package code, report, and presentation files for submission  
+- Submit all required materials before the deadline  
+
+---
+
 ### 2025-07-01
 * Added tabbed layout with Main and About tabs
 * Header stays fixed above tabs

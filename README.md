@@ -130,4 +130,94 @@ This branch marked the first major structural change — we split the project in
 ### `data_pull_exp`  
 This became the primary experimental and feature expansion branch. It includes support for multiple satellite groups, custom satellite selection, disclaimer handling, UI polishing, and several usability improvements. Most of the recent development work happens here before it gets cleaned up and merged elsewhere.
 
-### 
+---
+
+## Error Logging
+
+- FileNotFoundError — 2025-05-18  
+- FileNotFoundError — 2025-05-19  
+- AttributeError — 2025-05-21  
+- AttributeError — 2025-05-22  
+- ImportError / ModuleNotFoundError — 2025-05-20  
+- ImportError / ModuleNotFoundError — 2025-05-25  
+- ValueError — 2025-05-21  
+- ValueError — 2025-05-27  
+- CRS Errors — 2025-05-22  
+- CRS Errors — 2025-05-29  
+- Streamlit UI Issues — 2025-05-23  
+- Streamlit UI Issues — 2025-05-30  
+- Memory Errors — 2025-05-24  
+- Memory Errors — 2025-06-02  
+- Shapefile Export Errors — 2025-05-25  
+- Shapefile Export Errors — 2025-06-03  
+- PDF Generation Errors — 2025-05-26  
+- PDF Generation Errors — 2025-06-05  
+- Network Errors — 2025-05-27  
+- Network Errors — 2025-06-01  
+- KeyError — 2025-05-28  
+- KeyError — 2025-06-09  
+- TimeoutError — 2025-05-29  
+- TimeoutError — 2025-06-12  
+- UnicodeEncodeError — 2025-05-30  
+- UnicodeEncodeError — 2025-06-14  
+- Spatial Join Errors — 2025-05-31  
+- Spatial Join Errors — 2025-06-15  
+- Datetime Handling Errors — 2025-06-01  
+- Datetime Handling Errors — 2025-06-28  
+- PermissionError — 2025-06-02  
+- PermissionError — 2025-06-19  
+- IndexError — 2025-06-03  
+- IndexError — 2025-06-21  
+- RuntimeWarning — 2025-06-04  
+- RuntimeWarning — 2025-06-23  
+- RecursionError — 2025-06-05  
+- RecursionError — 2025-06-25  
+- ConnectionResetError — 2025-06-06  
+- ConnectionResetError — 2025-06-27  
+- TypeError — 2025-06-07  
+- TypeError — 2025-06-29  
+- AssertionError — 2025-06-08  
+- AssertionError — 2025-07-01  
+- JSONDecodeError — 2025-06-09  
+- JSONDecodeError — 2025-07-03  
+- ModuleDeprecationWarning — 2025-06-10  
+- ModuleDeprecationWarning — 2025-07-05  
+- ZeroDivisionError — 2025-06-11  
+- ZeroDivisionError — 2025-07-07  
+- UserWarning — 2025-06-12  
+- UserWarning — 2025-07-08  
+- SyntaxError — 2025-06-13  
+- FileNotFoundError — 2025-06-14  
+- AttributeError — 2025-06-15  
+- ImportError / ModuleNotFoundError — 2025-06-16  
+- ValueError — 2025-06-17  
+- CRS Errors — 2025-06-18  
+- Streamlit UI Issues — 2025-06-19  
+- Memory Errors — 2025-06-20  
+- Shapefile Export Errors — 2025-06-21  
+- PDF Generation Errors — 2025-06-22  
+- Network Errors — 2025-06-23  
+- KeyError — 2025-06-24  
+- TimeoutError — 2025-06-25  
+- UnicodeEncodeError — 2025-06-26  
+- Spatial Join Errors — 2025-06-27  
+- PermissionError — 2025-06-29  
+- IndexError — 2025-06-30  
+- RuntimeWarning — 2025-07-01  
+- Streamlit UI Issues — 2025-07-02  
+- RecursionError — 2025-07-02  
+- TimeoutError — 2025-07-06  
+- PermissionError — 2025-07-06  
+- PermissionError — 2025-07-01  
+- PermissionError — 2025-07-08  
+- ImportError / ModuleNotFoundError — 2025-06-30  
+- Network Errors — 2025-07-03  
+- Performance Issues — 2025-06-29  
+- Streamlit UI Issues — 2025-07-04  
+- ZipFile Errors — 2025-06-22  
+- IndexError — 2025-07-06  
+- TypeError — 2025-06-23  
+- SyntaxError — 2025-05-19  
+- ZeroDivisionError — 2025-07-08  
+- ModuleDeprecationWarning — 2025-06-03  
+- UserWarning — 2025-06-20  

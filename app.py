@@ -333,21 +333,63 @@ with tabs[1]:
     st.header("About This App")
     st.markdown(
         """
-        ### Data Source and API
-        This application retrieves satellite orbital data exclusively from [CelesTrak](https://celestrak.org/), 
-        a public source of satellite TLE (Two-Line Element) data.
+        ### APIs and Python Packages Used
+
+        **1. CelesTrak (Satellite TLE Data API)**  
+        - Website: [https://celestrak.org/](https://celestrak.org/)  
+        - Provides publicly accessible Two-Line Element (TLE) data for tracking satellites. The app downloads TLE files from CelesTrak groups to compute satellite orbits and positions.
+        
+        **2. Skyfield**  
+        - Website: [https://rhodesmill.org/skyfield/](https://rhodesmill.org/skyfield/)  
+        - A Python library for astronomy and satellite position calculations. Skyfield loads TLE data and calculates precise satellite locations over time using orbital mechanics.
+        
+        **3. GeoPandas**  
+        - Website: [https://geopandas.org/](https://geopandas.org/)  
+        - Extends pandas to support geographic data. Used to handle geospatial data, create and manipulate geometries such as AOI bounding boxes, satellite ground tracks, and spatial queries.
+        
+        **4. Shapely**  
+        - Website: [https://shapely.readthedocs.io/](https://shapely.readthedocs.io/)  
+        - A Python package for manipulation and analysis of planar geometric objects. Used here to create points, lines, and buffers for satellite ground tracks and AOI intersection tests.
+        
+        **5. Cartopy**  
+        - Website: [https://scitools.org.uk/cartopy/docs/latest/](https://scitools.org.uk/cartopy/docs/latest/)  
+        - A library providing cartographic tools for Python, used for creating the maps that display satellite passes and AOI boundaries.
+        
+        **6. Matplotlib**  
+        - Website: [https://matplotlib.org/](https://matplotlib.org/)  
+        - A core Python plotting library used here to visualize geographic data, satellite tracks, and map features.
+        
+        **7. Streamlit**  
+        - Website: [https://streamlit.io/](https://streamlit.io/)  
+        - A Python framework for building interactive web applications. Used for the UI, inputs, outputs, tabs, progress bars, and downloadable reports.
+        
+        **8. FPDF (Python FPDF)**  
+        - Website: [https://pyfpdf.github.io/fpdf2/](https://pyfpdf.github.io/fpdf2/)  
+        - A library to generate PDF documents in Python, used to create the downloadable daily satellite pass report including images and text.
+        
+        **9. Pillow (PIL)**  
+        - Website: [https://python-pillow.org/](https://python-pillow.org/)  
+        - The Python Imaging Library fork, used here to handle image saving and manipulation within the PDF creation process.
+        
+        **10. Pandas**  
+        - Website: [https://pandas.pydata.org/](https://pandas.pydata.org/)  
+        - Provides data structures and analysis tools. Used here mainly for tabular data management alongside GeoPandas.
+        
+        **11. Zipfile (Python standard library)**  
+        - Documentation: [https://docs.python.org/3/library/zipfile.html](https://docs.python.org/3/library/zipfile.html)  
+        - Used to compress the shapefile components into a single ZIP archive for easy download.
+        
+        **12. tempfile (Python standard library)**  
+        - Documentation: [https://docs.python.org/3/library/tempfile.html](https://docs.python.org/3/library/tempfile.html)  
+        - Used to create temporary files for image storage during PDF creation without cluttering disk permanently.
 
         ### How the Analysis Works
-        - The user defines an Area of Interest (AOI) using a bounding box.
-        - Satellite groups are selected based on categories provided by CelesTrak.
-        - The app downloads or loads cached TLE data for the selected satellite group.
-        - It calculates satellite positions over the selected day at specified time intervals.
-        - For each satellite, it buffers its ground track points by the selected swath width and checks for intersection with the AOI.
-        - Satellites passing over the AOI are identified and displayed along with their pass times.
-        - The results are visualized on a map.
+        - This tool focuses on satellites in Low Earth Orbit (LEO) because these satellites regularly pass over specific areas on Earth within short time intervals. Their orbits are close to the surface—typically between 160 and 2,000 km altitude—which allows us to calculate exactly when and where they will pass over your area of interest. This makes the predictions useful for applications like Earth observation, communication, and environmental monitoring.
+        - Geostationary Earth Orbit (GEO) satellites stay fixed over the equator at about 35,786 km altitude, maintaining a constant position relative to the Earth's surface. Since GEO satellites don’t move across the sky from a ground observer’s viewpoint, they don’t have "passes" like LEO satellites do. Instead, their coverage area remains broad and static. Because of this, we don’t include GEO satellites in this tool, since analyzing their coverage requires different methods. We focus on LEO satellites because their changing positions let us predict passes precisely using Two-Line Element (TLE) data.
 
         ### Contact
-        For questions or feedback, please contact: [your.email@example.com](mailto:your.email@example.com)
+        Created by: Steven Littel
+        Email: scl323@nau.edu
         """
     )
 

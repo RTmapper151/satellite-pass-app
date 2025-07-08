@@ -9,3 +9,4 @@ pandas
 fpdf
 pillow
 folium
+streamlit_folium

@@ -4,6 +4,73 @@
 The goal of this project is to identify Earth observation satellite passes over defined Areas of Interest (AOIs) using publicly available TLE data. It combines orbital modeling through Skyfield with spatial analysis tools to calculate and visualize when and where satellites are overhead. The final product is an interactive Streamlit app that supports multiple AOIs, outputs pass information, and maps each satellite’s ground track with context.
 
 ---
+## Skills Demonstrated
+
+### Remote Sensing & Orbital Data
+- Parsed and utilized real satellite Two-Line Element (TLE) data from CelesTrak.  
+- Calculated satellite ground tracks and simulated sensor swaths using subpoint positions and buffered footprints.  
+- Filtered analysis to focus on low Earth orbit (LEO) satellites relevant for Earth observation.
+
+### Spatial Analysis & Geometry Handling
+- Created and manipulated AOIs and satellite swath zones as GeoDataFrames using GeoPandas.  
+- Performed spatial joins, intersects, and buffering operations to detect satellite coverage of AOIs.  
+- Modeled spatial-temporal phenomena by linking orbital data to geographic locations over time.
+
+### Coordinate Reference System (CRS) Management
+- Applied accurate CRS transformations between geographic (EPSG:4326) and projected metric systems (EPSG:3857).  
+- Ensured precision in distance-based operations like buffering by working in appropriate projections.  
+- Maintained consistent coordinate systems throughout processing, visualization, and export.
+
+### Geospatial Data Export & Engineering
+- Generated multi-file shapefiles including satellite ground tracks and AOI boundaries with proper spatial metadata.  
+- Packaged shapefiles into zipped archives compatible with GIS software like QGIS and ArcGIS.  
+- Managed file I/O and temporary storage efficiently for reliable export workflows.
+
+### Cartographic Visualization
+- Produced clear, publication quality maps using Matplotlib and Cartopy with basemap layers, AOI outlines, and satellite paths.  
+- Used dynamic map extents and color-coded symbology to enhance readability and spatial context.  
+- Integrated geographical features such as coastlines, borders, land, and ocean layers.
+
+### Web GIS Interface Development
+- Built an interactive web app with Streamlit for user-driven geospatial analysis.  
+- Enabled AOI input via bounding boxes, satellite group selection, and parameter adjustments all within a browser.  
+- Delivered instant visualizations, reports, and GIS data downloads with responsive UI elements.
+
+### Scientific Reporting & Reproducibility
+- Automated generation of PDF reports including maps, satellite pass times, swath widths, and data source citations.  
+- Embedded metadata to ensure analysis transparency and reproducibility for research and operational use.  
+- Documented processing steps and data provenance clearly in user-facing outputs.
+
+### Data Integration & API Usage
+- Accessed live satellite orbital data from public sources with caching to improve performance.  
+- Supported multiple satellite groups and categories, facilitating thematic and comparative analyses.  
+- Linked users to external resources for additional satellite data exploration.
+
+### Python Programming for GIS
+- Developed modular, readable Python code combining spatial and non-spatial libraries (Skyfield, GeoPandas, Shapely, Cartopy, Matplotlib, Streamlit).  
+- Implemented robust file management, including temporary files, shapefile creation, and zipped downloads.  
+- Automated end-to-end workflows from data acquisition through analysis to output generation.
+
+### Automated Geospatial Workflows
+- Designed a fully automated pipeline to translate orbital data into actionable geospatial insights.  
+- Reduced manual GIS processing by scripting spatial analysis, visualization, and reporting.  
+- Structured code for extensibility, allowing easy addition of new satellite groups or AOI types.
+
+### User-Centered Design & Practical Application
+- Developed a user-friendly interface allowing non-experts to analyze satellite passes without GIS or orbital mechanics knowledge.  
+- Enabled users to specify AOIs, satellite groups, swath widths, and time intervals to tailor analysis outputs.  
+- Delivered multiple output formats: interactive maps, PDF reports, and GIS-ready shapefiles.  
+- Bridged complex geospatial and remote sensing concepts into an accessible tool that provides clear, actionable results.  
+- Demonstrated the ability to build spatial tools that solve real-world problems for users who want insights, not just data.
+
+### Additional GIS & Technical Skills
+- Applied temporal data handling by generating time intervals and associating satellite positions over time.  
+- Used spatial indexing and efficient querying to optimize intersection checks for performance.  
+- Managed visualization aesthetics and legends to improve map interpretability.  
+- Integrated error handling and data validation to ensure robust user experience.  
+- Balanced computational performance with spatial accuracy through adjustable parameters like time step and swath width.
+
+---
 
 ## Latest Branch (Usable): data-sources
 

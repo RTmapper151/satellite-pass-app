@@ -1,5 +1,72 @@
 # Earth Observation Satellite Pass Analyzer
 
+---
+
+## Latest Branch (Usable): user-data-upload
+
+---
+### Features in user-data-upload:
+
+- Option to define AOI by manual bounding box input
+- Option to upload AOI as a shapefile (zip archive)
+- Automatic reading and extraction of bounding box from uploaded shapefile
+- Preview map of AOI using Cartopy
+- Auto-adjust map extent and zoom based on AOI boundaries
+- AOI visualization includes coastlines, land, ocean, and borders
+- Satellite pass analysis works with both bounding box and shapefile AOIs
+- Integration of AOI selection with satellite pass prediction and plotting
+- PDF report generation including AOI and satellite pass data
+- Downloadable shapefile of satellite ground tracks and AOI boundary
+
+
+---
+
+# Features in data-input
+
+## User Interface
+- Interactive web app built with **Streamlit**.
+- Tabbed navigation with "Main" and "About" sections.
+- User inputs for AOI bounding box (min/max latitude and longitude).
+- Preview map of AOI using **Matplotlib** and **Cartopy**.
+- Satellite group selection from multiple predefined categories with descriptions.
+- Date picker for selecting analysis date.
+- Sliders for swath width (km) and time interval (minutes).
+- Progress bar and status text to show analysis progress.
+
+## Data Handling & Analysis
+- Download and cache Two-Line Element (TLE) files from **CelesTrak**.
+- Parse TLE data with **Skyfield** to load satellite orbital info.
+- Generate time intervals throughout the day for satellite position calculations.
+- Compute satellite subpoints (lat/lon) for each time step.
+- Create buffered polygons representing satellite swath widths.
+- Use **GeoPandas** spatial join to find satellite passes intersecting the AOI.
+- Produce list of passing satellites with timestamps.
+- Generate geometric ground track lines for visualization and export.
+
+## Visualization
+- Plot satellite passes, swath buffers, and AOI boundary on a map with **Cartopy**.
+- Unique colors and labels for each satellite pass.
+- Map features include coastlines, country borders, land, and ocean.
+- AOI preview map for visual verification.
+
+## Reporting & Export
+- Generate downloadable PDF report with:
+  - Satellite group and date info
+  - TLE data source details
+  - List of passing satellites and times
+  - Embedded satellite pass map image
+- Export satellite ground tracks and AOI boundary as **shapefiles**.
+- Package shapefiles into a ZIP archive for download.
+- Download buttons for PDF report and shapefile ZIP.
+
+## Code Quality & User Experience
+- Modular functions for clarity and reuse.
+- Real-time progress feedback during analysis.
+- File existence checks before reading/writing outputs.
+- Detailed About tab explaining APIs, libraries, satellite orbits, and contact info.
+
+---
+
 ## Goal  
 The goal of this project is to identify Earth observation satellite passes over defined Areas of Interest (AOIs) using publicly available TLE data. It combines orbital modeling through Skyfield with spatial analysis tools to calculate and visualize when and where satellites are overhead. The final product is an interactive Streamlit app that supports multiple AOIs, outputs pass information, and maps each satellite’s ground track with context.
 
@@ -70,55 +137,7 @@ The goal of this project is to identify Earth observation satellite passes over 
 - Integrated error handling and data validation to ensure robust user experience.  
 - Balanced computational performance with spatial accuracy through adjustable parameters like time step and swath width.
 
----
 
-## Latest Branch (Usable): data-input
-
----
-
-# Features in data-input
-
-## User Interface
-- Interactive web app built with **Streamlit**.
-- Tabbed navigation with "Main" and "About" sections.
-- User inputs for AOI bounding box (min/max latitude and longitude).
-- Preview map of AOI using **Matplotlib** and **Cartopy**.
-- Satellite group selection from multiple predefined categories with descriptions.
-- Date picker for selecting analysis date.
-- Sliders for swath width (km) and time interval (minutes).
-- Progress bar and status text to show analysis progress.
-
-## Data Handling & Analysis
-- Download and cache Two-Line Element (TLE) files from **CelesTrak**.
-- Parse TLE data with **Skyfield** to load satellite orbital info.
-- Generate time intervals throughout the day for satellite position calculations.
-- Compute satellite subpoints (lat/lon) for each time step.
-- Create buffered polygons representing satellite swath widths.
-- Use **GeoPandas** spatial join to find satellite passes intersecting the AOI.
-- Produce list of passing satellites with timestamps.
-- Generate geometric ground track lines for visualization and export.
-
-## Visualization
-- Plot satellite passes, swath buffers, and AOI boundary on a map with **Cartopy**.
-- Unique colors and labels for each satellite pass.
-- Map features include coastlines, country borders, land, and ocean.
-- AOI preview map for visual verification.
-
-## Reporting & Export
-- Generate downloadable PDF report with:
-  - Satellite group and date info
-  - TLE data source details
-  - List of passing satellites and times
-  - Embedded satellite pass map image
-- Export satellite ground tracks and AOI boundary as **shapefiles**.
-- Package shapefiles into a ZIP archive for download.
-- Download buttons for PDF report and shapefile ZIP.
-
-## Code Quality & User Experience
-- Modular functions for clarity and reuse.
-- Real-time progress feedback during analysis.
-- File existence checks before reading/writing outputs.
-- Detailed About tab explaining APIs, libraries, satellite orbits, and contact info.
 
 ---
 #Errors:

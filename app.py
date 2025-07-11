@@ -187,9 +187,7 @@ st.markdown("## Select a Tab Below to Begin")
 tabs = st.tabs(["Main", "About"])
 
 with tabs[0]:
-    st.header("1. Define AOI")
 
-    with tabs[0]:
     st.header("1. Define AOI")
 
     col1, col2 = st.columns(2)

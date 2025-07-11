@@ -18,7 +18,9 @@ from fpdf import FPDF
 from PIL import Image
 
 import folium
-from streamlit_folium import st_folium  # To display Folium maps in Streamlit
+from streamlit_folium import st_folium
+
+from matplotlib import colors
 
 
 def preview_aoi_map(aoi):

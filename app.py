@@ -1,4 +1,3 @@
-Rewrite the full code below to integrate the aforementioned action items: import streamlit as st  # Build interactive UI
 import geopandas as gpd  # Handle geospatial data
 import matplotlib.pyplot as plt  # Plot maps
 from shapely.geometry import Point, box, LineString  # Geometry tools

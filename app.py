@@ -189,51 +189,19 @@ tabs = st.tabs(["Main", "About"])
 with tabs[0]:
     st.header("1. Define AOI")
 
-    aoi_input_method = st.radio("Choose AOI input method:", ["Upload Shapefile", "Manual Bounding Box"])
+    with tabs[0]:
+    st.header("1. Define AOI")
 
-    if aoi_input_method == "Upload Shapefile":
-        uploaded_zip = st.file_uploader("Upload a zipped shapefile (.zip)", type=["zip"])
-        if uploaded_zip:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                zip_path = os.path.join(tmpdir, "aoi.zip")
-                with open(zip_path, "wb") as f:
-                    f.write(uploaded_zip.read())
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(tmpdir)
-    
-                shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
-                shp_path = None
-                for root, _, files in os.walk(tmpdir):
-                    for file in files:
-                        if file.endswith(".shp"):
-                            shp_path = os.path.join(root, file)
-                            break
-                    try:
-                        aoi = gpd.read_file(shp_path).to_crs("EPSG:4326")
-                        st.success("✅ AOI shapefile loaded successfully.")
-                        st.pyplot(preview_aoi_map(aoi))
-                    except Exception as e:
-                        st.error(f"Error reading shapefile: {e}")
-                        st.stop()
-                else:
-                    st.error("No .shp file found in uploaded ZIP.")
-                    st.stop()
-        else:
-            st.warning("Upload a shapefile ZIP to proceed.")
-            st.stop()
-    
-    elif aoi_input_method == "Manual Bounding Box":
-        col1, col2 = st.columns(2)
-        with col1:
-            min_lon = st.number_input("Min Longitude", value=127.5)
-            min_lat = st.number_input("Min Latitude", value=25.5)
-        with col2:
-            max_lon = st.number_input("Max Longitude", value=129.0)
-            max_lat = st.number_input("Max Latitude", value=27.0)
-    
-        aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
-        st.pyplot(preview_aoi_map(aoi))
+    col1, col2 = st.columns(2)
+    with col1:
+        min_lon = st.number_input("Min Longitude", value=127.5)
+        min_lat = st.number_input("Min Latitude", value=25.5)
+    with col2:
+        max_lon = st.number_input("Max Longitude", value=129.0)
+        max_lat = st.number_input("Max Latitude", value=27.0)
 
+    aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
+    st.pyplot(preview_aoi_map(aoi))
 
     st.header("2. Select Satellite Group and Parameters")
     group_options = {

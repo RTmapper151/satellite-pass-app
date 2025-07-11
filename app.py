@@ -209,7 +209,7 @@ with tabs[0]:
                             shp_path = os.path.join(root, file)
                             break
                     try:
-                        aoi = gpd.read_file(aoi_path).to_crs("EPSG:4326")
+                        aoi = gpd.read_file(shp_path).to_crs("EPSG:4326")
                         st.success("✅ AOI shapefile loaded successfully.")
                         st.pyplot(preview_aoi_map(aoi))
                     except Exception as e:

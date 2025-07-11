@@ -203,11 +203,11 @@ with tabs[0]:
     
                 shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
                 shp_path = None
-                    for root, _, files in os.walk(tmpdir):
-                        for file in files:
-                            if file.endswith(".shp"):
-                                shp_path = os.path.join(root, file)
-                                break
+                for root, _, files in os.walk(tmpdir):
+                    for file in files:
+                        if file.endswith(".shp"):
+                            shp_path = os.path.join(root, file)
+                            break
                     try:
                         aoi = gpd.read_file(aoi_path).to_crs("EPSG:4326")
                         st.success("✅ AOI shapefile loaded successfully.")

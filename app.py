@@ -1,24 +1,29 @@
 import streamlit as st  # Build interactive UI
 import geopandas as gpd  # Handle geospatial data
-import matplotlib.pyplot as plt  # Plot maps
 from shapely.geometry import Point, box, LineString  # Geometry tools
 from skyfield.api import load  # Satellite orbital data
 import numpy as np  # Numerical tools
 import os  # File handling
 from datetime import date as dt_date  # Handle dates
+import matplotlib.pyplot as plt  # For AOI preview plot
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import shutil
 import pandas as pd
 import zipfile
 import tempfile
-import os
-from fpdf import FPDF
-from PIL import Image
 import io
 
+from fpdf import FPDF
+from PIL import Image
+
+import folium
+from streamlit_folium import st_folium  # To display Folium maps in Streamlit
+
+
 def preview_aoi_map(aoi):
-    fig = plt.figure(figsize=(6,6))
+    # Small static AOI preview with matplotlib + cartopy
+    fig = plt.figure(figsize=(6, 6))
     ax = plt.axes(projection=ccrs.PlateCarree())
 
     # Basemap layers
@@ -32,18 +37,18 @@ def preview_aoi_map(aoi):
 
     # Set extent with padding
     bounds = aoi.total_bounds
-    ax.set_extent([bounds[0]-2, bounds[2]+2, bounds[1]-2, bounds[3]+2], crs=ccrs.PlateCarree())
+    ax.set_extent([bounds[0] - 2, bounds[2] + 2, bounds[1] - 2, bounds[3] + 2], crs=ccrs.PlateCarree())
 
     ax.set_title("AOI Preview", fontsize=12)
     plt.tight_layout()
     return fig
+
 
 def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_source, passing_sats, fig):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Title and metadata as before...
     pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, "Satellite Pass Daily Report", ln=True, align='C')
     pdf.ln(10)
@@ -70,111 +75,91 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
         fig.savefig(temp_img_path, format='PNG', dpi=300)
 
     # Add image to PDF
-    page_width = pdf.w - 2*pdf.l_margin
+    page_width = pdf.w - 2 * pdf.l_margin
     pdf.image(temp_img_path, x=pdf.l_margin, w=page_width)
 
     # Clean up the temp file
     os.remove(temp_img_path)
 
-    # Output PDF to bytes buffer
     pdf_output = pdf.output(dest='S').encode('latin1')  # get PDF as bytes string
     pdf_bytes = io.BytesIO(pdf_output)
     pdf_bytes.seek(0)
     return pdf_bytes
 
+
 def show_data_links(sat_name):
     search_url = f"https://www.google.com/search?q={sat_name.replace(' ', '+')}+satellite+data+download"
     st.markdown(f"🔎 [Search for data from {sat_name}]({search_url})")
 
-# --- Downloader with caching ---
+
 def download_tle(group, save_folder, max_days=1.0):
-    """Download or load cached TLE data for the specified group."""
-    os.makedirs(save_folder, exist_ok=True)  # Ensure folder exists
+    os.makedirs(save_folder, exist_ok=True)
     filename = f"{group}.tle"
     filepath = os.path.join(save_folder, filename)
     base_url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=TLE'
     url = base_url.format(group=group)
 
-    if not load.exists(filepath) or load.days_old(filepath) >= max_days:
-        load.download(url, filename=filepath)  # Fetch new data
+    # Simplified download logic (no load.exists in skyfield, adjust if needed)
+    if not os.path.exists(filepath) or (os.path.getmtime(filepath) < (os.path.getmtime(filepath) - max_days * 86400)):
+        # Download fresh
+        import requests
+        r = requests.get(url)
+        with open(filepath, 'w') as f:
+            f.write(r.text)
         source = f"Downloaded fresh TLE from: {url}"
     else:
         source = f"Loaded cached TLE file: {filepath}"
     return filepath, source
 
-# --- Create AOI from bounding box ---
+
 def create_aoi(min_lon, min_lat, max_lon, max_lat):
-    """Create a GeoDataFrame representing the AOI bounding box."""
     return gpd.GeoDataFrame({'geometry': [box(min_lon, min_lat, max_lon, max_lat)]}, crs="EPSG:4326")
 
-# --- Generate time intervals ---
+
 def generate_times(year, month, day, interval_minutes):
-    """Generate a Skyfield time array for the given day at specified intervals."""
     ts = load.timescale()
-    minutes = np.arange(0, 24*60, interval_minutes)
+    minutes = np.arange(0, 24 * 60, interval_minutes)
     return ts.utc(year, month, day, 0, minutes)
 
-# --- Analyze satellite passes ---
+
 def find_passing_sats(satellites, times, aoi, swath_width_m):
-    """Find satellites passing over the AOI with given swath width."""
     passing_sats = []
-    colors = plt.cm.get_cmap('tab20', len(satellites))  # Assign colors for plotting
-    buffer_radius = swath_width_m / 2  # Buffer half swath width for intersection
+    colors = plt.cm.get_cmap('tab20', len(satellites))
+    buffer_radius = swath_width_m / 2
     plot_data = []
 
     for i, sat in enumerate(satellites):
-        subpoint = sat.at(times).subpoint()  # Compute subpoints for satellite over time
+        subpoint = sat.at(times).subpoint()
         lats = subpoint.latitude.degrees
         lons = subpoint.longitude.degrees
-        points = [Point(lon, lat) for lon, lat in zip(lons, lats)]  # Convert to Point geometries
+        points = [Point(lon, lat) for lon, lat in zip(lons, lats)]
 
-        sat_gdf = gpd.GeoDataFrame({'geometry': points}, crs="EPSG:4326")  # Create GeoDataFrame
-        sat_gdf_3857 = sat_gdf.to_crs("EPSG:3857")  # Project to metric CRS for buffering
-        swath_buffers = sat_gdf_3857.buffer(buffer_radius)  # Buffer points by swath radius
-        swath_gdf = gpd.GeoDataFrame(geometry=swath_buffers, crs="EPSG:3857").to_crs("EPSG:4326")  # Back to lat/lon
+        sat_gdf = gpd.GeoDataFrame({'geometry': points}, crs="EPSG:4326")
+        sat_gdf_3857 = sat_gdf.to_crs("EPSG:3857")
+        swath_buffers = sat_gdf_3857.buffer(buffer_radius)
+        swath_gdf = gpd.GeoDataFrame(geometry=swath_buffers, crs="EPSG:3857").to_crs("EPSG:4326")
 
-        intersect = gpd.sjoin(swath_gdf, aoi, how='inner', predicate='intersects')  # Check intersection with AOI
+        intersect = gpd.sjoin(swath_gdf, aoi, how='inner', predicate='intersects')
 
         if not intersect.empty:
-            passing_time = times[intersect.index[0]].utc_iso()  # Get first intersection time
+            passing_time = times[intersect.index[0]].utc_iso()
             passing_sats.append((sat.name, passing_time))
-            trace_line = LineString([(pt.x, pt.y) for pt in points])  # Create ground track line
+
+            trace_line = LineString([(pt.x, pt.y) for pt in points])
             plot_data.append({
                 'swath_gdf': swath_gdf,
                 'trace_line': trace_line,
                 'color': colors(i),
-                'name': sat.name
+                'name': sat.name,
+                'lats': lats,
+                'lons': lons,
+                'times': times,
+                'subpoint': subpoint,
+                'sat': sat
             })
 
     return passing_sats, plot_data
 
-# --- Plot map of satellite passes ---
-def plot_results(aoi, plot_data, swath_width_km):
-    fig = plt.figure(figsize=(10, 7))
-    ax = plt.axes(projection=ccrs.PlateCarree())
-
-    # Basemap layers
-    ax.coastlines()
-    ax.add_feature(cfeature.BORDERS, linestyle=':')
-    ax.add_feature(cfeature.LAND, edgecolor='black', alpha=0.3)
-    ax.add_feature(cfeature.OCEAN, alpha=0.1)
-
-    # Plot AOI boundary
-    aoi.boundary.plot(ax=ax, color='black', linewidth=2, label='AOI')
-
-    # Plot swaths and traces
-    for item in plot_data:
-        item['swath_gdf'].plot(ax=ax, color='red', alpha=0.4)
-        ax.plot(*item['trace_line'].xy, color=item['color'], linewidth=1.5, label=item['name'])
-
-    # Set bounds
-    bounds = aoi.total_bounds
-    ax.set_extent([bounds[0] - 2, bounds[2] + 2, bounds[1] - 2, bounds[3] + 2], crs=ccrs.PlateCarree())
-
-    ax.set_title("Satellite Passes", fontsize=14)
-    ax.legend(fontsize=8, loc='lower left')
-    plt.tight_layout()
-    return fig
 
 # --- Main Streamlit UI setup ---
 st.title("Satellite Pass Finder")
@@ -183,11 +168,9 @@ st.markdown("This tool finds satellites that pass over your AOI and tells you ho
 # --- Add a fixed page header above the tabs ---
 st.markdown("## Select a Tab Below to Begin")
 
-# --- Tabs ---
 tabs = st.tabs(["Main", "About"])
 
 with tabs[0]:
-
     st.header("1. Define AOI")
 
     col1, col2 = st.columns(2)
@@ -237,6 +220,8 @@ with tabs[0]:
     swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
     interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)
 
+    show_swaths = st.checkbox("Show Satellite Swath Buffers", value=True)
+
     if st.button("Run Analysis"):
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -244,32 +229,70 @@ with tabs[0]:
         year, month, day = date.year, date.month, date.day
         tle_folder = "./.cache_tle"
 
-        # Step 1: Download TLE
         status_text.text("Downloading TLE data...")
         tle_path, tle_source = download_tle(tle_group, tle_folder)
         progress_bar.progress(20)
 
-        # Step 2: Load satellites
         status_text.text("Loading satellite data...")
         satellites = load.tle_file(tle_path)
         progress_bar.progress(40)
 
-        # Step 3: Generate time intervals
         status_text.text("Generating time intervals...")
         times = generate_times(year, month, day, interval)
         progress_bar.progress(60)
 
-        # Step 4: Analyze satellite passes
         status_text.text("Finding satellites passing over AOI...")
         swath_width_m = swath_km * 1000
         passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
         progress_bar.progress(80)
 
-        # Step 5: Plot results
-        status_text.text("Plotting results...")
-        fig = plot_results(aoi, plot_data, swath_km)
-        progress_bar.progress(100)
+        status_text.text("Preparing interactive map...")
 
+        # Create Folium map centered on AOI
+        bounds = aoi.total_bounds  # [minx, miny, maxx, maxy]
+        center_lat = (bounds[1] + bounds[3]) / 2
+        center_lon = (bounds[0] + bounds[2]) / 2
+        folium_map = folium.Map(location=[center_lat, center_lon], zoom_start=8, tiles='CartoDB positron')
+
+        # Add AOI boundary polygon
+        folium.GeoJson(aoi.geometry.__geo_interface__, name="AOI Boundary",
+                       style_function=lambda x: {"color": "blue", "weight": 3, "fill": False}).add_to(folium_map)
+
+        # Add satellite passes to map
+        for item in plot_data:
+            # Ground track polyline
+            coords = list(item['trace_line'].coords)
+            coords_latlon = [(lat, lon) for lon, lat in coords]  # Folium expects (lat, lon)
+            # Fix above: actually folium uses (lat, lon) order, but coords from shapely is (x=lon, y=lat)
+            coords_latlon = [(pt[1], pt[0]) for pt in coords]
+
+            # Create popup text with satellite info (including altitude at first passing time)
+            altitudes_km = item['subpoint'].elevation.km
+            first_alt = altitudes_km[0]
+            first_time_str = item['times'][0].utc_iso()
+            popup_text = f"<b>{item['name']}</b><br>Pass start: {first_time_str}<br>Altitude (km): {first_alt:.1f}"
+
+            folium.PolyLine(
+                locations=coords_latlon,
+                color=plt.colors.to_hex(item['color']),
+                weight=3,
+                popup=folium.Popup(popup_text, max_width=300)
+            ).add_to(folium_map)
+
+            # Conditionally add swath buffers polygons
+            if show_swaths:
+                for poly in item['swath_gdf'].geometry:
+                    folium.GeoJson(
+                        data=poly.__geo_interface__,
+                        style_function=lambda feature: {
+                            'fillColor': 'red',
+                            'color': 'red',
+                            'fillOpacity': 0.3,
+                            'weight': 1,
+                        },
+                    ).add_to(folium_map)
+
+        progress_bar.progress(100)
         status_text.empty()
         progress_bar.empty()
 
@@ -283,9 +306,14 @@ with tabs[0]:
         else:
             st.warning("No satellites passed over the AOI.")
 
-        st.pyplot(fig)
+        # Show the interactive Folium map
+        st.subheader("Satellite Passes Map (Interactive)")
+        st_data = st_folium(folium_map, width=700, height=500)
 
-        # === File outputs ===
+        # Prepare PDF report with the static matplotlib plot of AOI + passes
+        fig = preview_aoi_map(aoi)  # Basic AOI preview
+        st.pyplot(fig)  # Also show static preview for reference
+
         with st.spinner("Preparing PDF and Shapefile downloads..."):
             pdf_buffer = create_pdf_report_text_and_image(tle_group, year, month, day, swath_km, tle_source, passing_sats, fig)
 
@@ -296,7 +324,7 @@ with tabs[0]:
                 mime="application/pdf"
             )
 
-            # === Shapefile export: satellite ground tracks + AOI boundary ===
+            # Shapefile export for ground tracks + AOI boundary
             lines = []
             for item in plot_data:
                 lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
@@ -389,7 +417,7 @@ with tabs[1]:
         - Geostationary Earth Orbit (GEO) satellites stay fixed over the equator at about 35,786 km altitude, maintaining a constant position relative to the Earth's surface. Since GEO satellites don’t move across the sky from a ground observer’s viewpoint, they don’t have "passes" like LEO satellites do. Instead, their coverage area remains broad and static. Because of this, we don’t include GEO satellites in this tool, since analyzing their coverage requires different methods. We focus on LEO satellites because their changing positions let us predict passes precisely using Two-Line Element (TLE) data.
 
         ### Contact
-        Created by: Steven Littel
+        Created by: Steven Littel  
         Email: scl323@nau.edu
         """
     )

@@ -276,7 +276,7 @@ with tabs[0]:
 
             folium.PolyLine(
                 locations=coords_latlon,
-                color=plt.colors.to_hex(item['color']),
+                color=colors.to_hex(item['color']),
                 weight=3,
                 popup=folium.Popup(popup_text, max_width=300)
             ).add_to(folium_map)

@@ -311,7 +311,24 @@ with tabs[0]:
 
     tle_group = group_options[sat_type]
 
-    date = st.date_input("Date", value=dt_date.today())
+    from datetime import timedelta
+
+    date_range = st.date_input(
+        "Select 1–3 Days",
+        value=[dt_date.today()],
+        min_value=dt_date.today() - timedelta(days=1),
+        max_value=dt_date.today() + timedelta(days=3)
+    )
+    
+    if isinstance(date_range, dt_date):
+        date_range = [date_range]
+    
+    if len(date_range) > 3:
+        st.warning("⚠️ Limit the range to 3 days or fewer for accurate LEO predictions.")
+        st.stop()
+    
+    st.caption(f"📌 TLE predictions will use data from the date you run this analysis: **{dt_date.today()}**.")
+
     swath_km = st.slider("Swath Width (km)", min_value=10, max_value=100, value=30)
     interval = st.slider("Time Interval (minutes)", min_value=1, max_value=60, value=10)
 
@@ -332,20 +349,26 @@ with tabs[0]:
         satellites = load.tle_file(tle_path)
         progress_bar.progress(40)
 
-        # Step 3: Generate time intervals
-        status_text.text("Generating time intervals...")
-        times = generate_times(year, month, day, interval)
-        progress_bar.progress(60)
+        # Step 3–4: Time intervals + pass analysis for all selected dates
+        all_passes = []
+        all_plot_data = []
+    
+        for d in date_range:
+            status_text.text(f"Analyzing passes for {d.isoformat()}...")
+            year, month, day = d.year, d.month, d.day
+            times = generate_times(year, month, day, interval)
+    
+            day_passes, day_plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
+    
+            for name, t in day_passes:
+                all_passes.append((name, t, d.isoformat()))
 
-        # Step 4: Analyze satellite passes
-        status_text.text("Finding satellites passing over AOI...")
-        swath_width_m = swath_km * 1000
-        passing_sats, plot_data = find_passing_sats(satellites, times, aoi, swath_width_m)
+            all_plot_data.extend(day_plot_data)
+            
         progress_bar.progress(80)
-
         # Step 5: Plot results
         status_text.text("Plotting results...")
-        fig = plot_results(aoi, plot_data, swath_km)
+        fig = plot_results(aoi, all_plot_data, swath_km)
         progress_bar.progress(100)
 
         status_text.empty()
@@ -353,13 +376,14 @@ with tabs[0]:
 
         st.subheader("3. Results")
         st.write(tle_source)
-        if passing_sats:
-            st.success(f"{len(passing_sats)} satellite(s) passed over the AOI.")
-            for name, t in passing_sats:
-                st.write(f"🛰️ {name} at {t}")
+        if all_passes:
+            st.success(f"{len(all_passes)} satellite pass(es) found across selected dates.")
+            for name, t, d in all_passes:
+                st.write(f"🛰️ {name} on {d} at {t}")
                 show_data_links(name)
         else:
             st.warning("No satellites passed over the AOI.")
+
 
         st.pyplot(fig)
 

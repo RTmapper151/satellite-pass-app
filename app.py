@@ -77,7 +77,7 @@ def create_pdf_report_text_and_image(sat_type, date_label, swath_km, tle_source,
         # Bullet list for satellites
         for name, t, d in passing_sats:
             pdf.cell(5)  # indent
-            pdf.cell(0, 8, f"• {name} on {d} at {t}", ln=True)
+            pdf.cell(0, 8, f"- {name} on {d} at {t}", ln=True)
     else:
         pdf.multi_cell(0, 10, "No satellites passed over the area.")
 

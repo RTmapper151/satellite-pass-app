@@ -336,7 +336,7 @@ with tabs[0]:
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        year, month, day = date.year, date.month, date.day
+        year, month, day = dt_date.today().year, dt_date.today().month, dt_date.today().day
         tle_folder = "./.cache_tle"
 
         # Step 1: Download TLE

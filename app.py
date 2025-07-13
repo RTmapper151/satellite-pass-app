@@ -189,9 +189,9 @@ tabs = st.tabs(["Main", "About"])
 with tabs[0]:
 
     st.header("1. Define AOI")
-
+    
     use_advanced = st.checkbox("Advanced: Upload AOI Shapefiles (for GIS users)")
-
+    
     if use_advanced:
         uploaded_files = st.file_uploader(
             "Upload one or more zipped shapefiles (.zip) for your AOIs",
@@ -201,43 +201,48 @@ with tabs[0]:
     
         aoi_list = []
     
-        for uploaded_zip in uploaded_files:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                zip_path = os.path.join(tmpdir, "aoi.zip")
-                with open(zip_path, "wb") as f:
-                    f.write(uploaded_zip.getvalue())
+        if uploaded_files:
+            for uploaded_zip in uploaded_files:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    zip_path = os.path.join(tmpdir, "aoi.zip")
+                    with open(zip_path, "wb") as f:
+                        f.write(uploaded_zip.getvalue())
     
-                with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                    zip_ref.extractall(tmpdir)
+                    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                        zip_ref.extractall(tmpdir)
     
-                shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
-                for shp in shp_files:
-                    try:
-                        aoi_gdf = gpd.read_file(os.path.join(tmpdir, shp))
-                        aoi_gdf = aoi_gdf.to_crs("EPSG:4326")
-                        aoi_list.append(aoi_gdf)
-                    except Exception as e:
-                        st.warning(f"Could not read {shp}: {e}")
+                    shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
+                    for shp in shp_files:
+                        try:
+                            shp_path = os.path.join(tmpdir, shp)
+                            aoi_gdf = gpd.read_file(shp_path)
+                            aoi_gdf = aoi_gdf.to_crs("EPSG:4326")
+                            aoi_list.append(aoi_gdf)
+                        except Exception as e:
+                            st.warning(f"❌ Could not read {shp}: {e}")
     
-        if aoi_list:
-            aoi = gpd.GeoDataFrame(pd.concat(aoi_list, ignore_index=True), crs="EPSG:4326")
-            st.pyplot(preview_aoi_map(aoi))
+            if aoi_list:
+                aoi = gpd.GeoDataFrame(pd.concat(aoi_list, ignore_index=True), crs="EPSG:4326")
+                st.success(f"✅ Loaded {len(aoi_list)} AOI shapefile(s).")
+                st.pyplot(preview_aoi_map(aoi))
+            else:
+                st.warning("⚠️ Please upload at least one valid shapefile.")
+                st.stop()
         else:
-            st.warning("Please upload at least one valid shapefile.")
+            st.info("📂 Upload zipped shapefiles to proceed.")
             st.stop()
-
-else:
-    col1, col2 = st.columns(2)
-    with col1:
-        min_lon = st.number_input("Min Longitude", value=127.5)
-        min_lat = st.number_input("Min Latitude", value=25.5)
-    with col2:
-        max_lon = st.number_input("Max Longitude", value=129.0)
-        max_lat = st.number_input("Max Latitude", value=27.0)
-
-    aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
-    st.pyplot(preview_aoi_map(aoi))
-
+    
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            min_lon = st.number_input("Min Longitude", value=127.5)
+            min_lat = st.number_input("Min Latitude", value=25.5)
+        with col2:
+            max_lon = st.number_input("Max Longitude", value=129.0)
+            max_lat = st.number_input("Max Latitude", value=27.0)
+    
+        aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
+        st.pyplot(preview_aoi_map(aoi))
 
     st.header("2. Select Satellite Group and Parameters")
     group_options = {

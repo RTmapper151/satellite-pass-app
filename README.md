@@ -5,18 +5,21 @@
 ## Latest Branch (Usable): user-data-upload
 
 ---
+
+## Link: https://satellite-pass-app-s2ycvn5vv6ese6cmhgnrtx.streamlit.app
+
+---
 ### Features in user-data-upload:
 
-- Option to define AOI by manual bounding box input
-- Option to upload AOI as a shapefile (zip archive)
-- Automatic reading and extraction of bounding box from uploaded shapefile
-- Preview map of AOI using Cartopy
-- Auto-adjust map extent and zoom based on AOI boundaries
-- AOI visualization includes coastlines, land, ocean, and borders
-- Satellite pass analysis works with both bounding box and shapefile AOIs
-- Integration of AOI selection with satellite pass prediction and plotting
-- PDF report generation including AOI and satellite pass data
-- Downloadable shapefile of satellite ground tracks and AOI boundary
+- Support for multiple AOI shapefiles upload alongside bounding box input  
+- Ability to analyze passes over multiple AOIs in one run  
+- Added date range input to find satellite passes across multiple days  
+- Aggregated and displayed satellite passes over entire date range with date tags  
+- Combined and plotted satellite pass data from all days and AOIs on one map  
+- Created a styled PDF report with header banner, metadata formatting, bulleted satellite lists, and embedded pass map  
+- Added page numbers in PDF footer  
+- Improved PDF text encoding to avoid errors (replaced bullet char with dash)  
+- Exported satellite ground tracks and AOI boundaries as shapefiles bundled in a ZIP for download  
 
 
 ---

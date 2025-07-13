@@ -43,41 +43,64 @@ def create_pdf_report_text_and_image(sat_type, date_label, swath_km, tle_source,
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Title and metadata as before...
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "Satellite Pass Daily Report", ln=True, align='C')
+    # Colored header banner
+    pdf.set_fill_color(30, 144, 255)  # Dodger Blue
+    pdf.rect(0, 0, pdf.w, 20, 'F')
+
+    # Title text (white on blue)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Arial", "B", 18)
+    pdf.cell(0, 15, "Satellite Pass Daily Report", ln=True, align='C')
+
     pdf.ln(10)
-    pdf.set_font("Arial", "", 12)
-    pdf.multi_cell(0, 10, f"TLE Source: {tle_source}")
-    pdf.multi_cell(0, 10, f"Satellite Group: {sat_type}")
-    pdf.multi_cell(0, 10, f"Date(s): {date_label}")
-    pdf.multi_cell(0, 10, f"Swath Width: {swath_km} km")
+
+    # Reset text color to black for body
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", "I", 11)
+    pdf.multi_cell(0, 8, f"TLE Source: {tle_source}")
+    pdf.multi_cell(0, 8, f"Satellite Group: {sat_type}")
+    pdf.multi_cell(0, 8, f"Date(s): {date_label}")
+    pdf.multi_cell(0, 8, f"Swath Width: {swath_km} km")
+
+    pdf.ln(5)
+    pdf.set_draw_color(200, 200, 200)
+    pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
     pdf.ln(5)
 
+    # Satellites list header
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "Satellites Passing Over the AOI:", ln=True)
+
+    pdf.set_font("Arial", "", 12)
+
     if passing_sats:
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, f"{len(passing_sats)} satellite(s) passed over the AOI:", ln=True)
-        pdf.set_font("Arial", "", 12)
+        # Bullet list for satellites
         for name, t, d in passing_sats:
-            pdf.multi_cell(0, 10, f"{name} on {d} at {t}")
+            pdf.cell(5)  # indent
+            pdf.cell(0, 8, f"• {name} on {d} at {t}", ln=True)
     else:
         pdf.multi_cell(0, 10, "No satellites passed over the area.")
+
     pdf.ln(10)
 
-    # Save figure to a temporary PNG file
+    # Save figure to temp PNG and add
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
         temp_img_path = tmpfile.name
         fig.savefig(temp_img_path, format='PNG', dpi=300)
 
-    # Add image to PDF
-    page_width = pdf.w - 2*pdf.l_margin
+    page_width = pdf.w - 2 * pdf.l_margin
     pdf.image(temp_img_path, x=pdf.l_margin, w=page_width)
 
-    # Clean up the temp file
     os.remove(temp_img_path)
 
-    # Output PDF to bytes buffer
-    pdf_output = pdf.output(dest='S').encode('latin1')  # get PDF as bytes string
+    # Footer with page numbers
+    pdf.alias_nb_pages()
+    pdf.set_y(-15)
+    pdf.set_font("Arial", "I", 8)
+    pdf.set_text_color(128, 128, 128)
+    pdf.cell(0, 10, f"Page {pdf.page_no()}/{{nb}}", align='C')
+
+    pdf_output = pdf.output(dest='S').encode('latin1')
     pdf_bytes = io.BytesIO(pdf_output)
     pdf_bytes.seek(0)
     return pdf_bytes

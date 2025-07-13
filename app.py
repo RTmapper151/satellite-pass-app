@@ -190,6 +190,43 @@ with tabs[0]:
 
     st.header("1. Define AOI")
 
+    use_advanced = st.checkbox("Advanced: Upload AOI Shapefiles (for GIS users)")
+
+    if use_advanced:
+        uploaded_files = st.file_uploader(
+            "Upload one or more zipped shapefiles (.zip) for your AOIs",
+            type="zip",
+            accept_multiple_files=True
+        )
+    
+        aoi_list = []
+    
+        for uploaded_zip in uploaded_files:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                zip_path = os.path.join(tmpdir, "aoi.zip")
+                with open(zip_path, "wb") as f:
+                    f.write(uploaded_zip.getvalue())
+    
+                with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                    zip_ref.extractall(tmpdir)
+    
+                shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
+                for shp in shp_files:
+                    try:
+                        aoi_gdf = gpd.read_file(os.path.join(tmpdir, shp))
+                        aoi_gdf = aoi_gdf.to_crs("EPSG:4326")
+                        aoi_list.append(aoi_gdf)
+                    except Exception as e:
+                        st.warning(f"Could not read {shp}: {e}")
+    
+        if aoi_list:
+            aoi = gpd.GeoDataFrame(pd.concat(aoi_list, ignore_index=True), crs="EPSG:4326")
+            st.pyplot(preview_aoi_map(aoi))
+        else:
+            st.warning("Please upload at least one valid shapefile.")
+            st.stop()
+
+else:
     col1, col2 = st.columns(2)
     with col1:
         min_lon = st.number_input("Min Longitude", value=127.5)
@@ -200,6 +237,7 @@ with tabs[0]:
 
     aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
     st.pyplot(preview_aoi_map(aoi))
+
 
     st.header("2. Select Satellite Group and Parameters")
     group_options = {
@@ -385,7 +423,7 @@ with tabs[1]:
         - Used to create temporary files for image storage during PDF creation without cluttering disk permanently.
 
         ### How the Analysis Works
-        - This tool focuses on satellites in Low Earth Orbit (LEO) because these satellites regularly pass over specific areas on Earth within short time intervals. Their orbits are close to the surface—typically between 160 and 2,000 km altitude—which allows us to calculate exactly when and where they will pass over your area of interest. This makes the predictions useful for applications like Earth observation, communication, and environmental monitoring.
+        - This tool focuses on satellites in Low Earth Orbit (LEO) because these satellites regularly pass over specific areas on Earth within short time intervals. Their orbits are close to the surface which allows us to calculate exactly when and where they will pass over your area of interest. This makes the predictions useful for applications like Earth observation, communication, and environmental monitoring.
         - Geostationary Earth Orbit (GEO) satellites stay fixed over the equator at about 35,786 km altitude, maintaining a constant position relative to the Earth's surface. Since GEO satellites don’t move across the sky from a ground observer’s viewpoint, they don’t have "passes" like LEO satellites do. Instead, their coverage area remains broad and static. Because of this, we don’t include GEO satellites in this tool, since analyzing their coverage requires different methods. We focus on LEO satellites because their changing positions let us predict passes precisely using Two-Line Element (TLE) data.
 
         ### Contact

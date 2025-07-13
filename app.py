@@ -38,7 +38,7 @@ def preview_aoi_map(aoi):
     plt.tight_layout()
     return fig
 
-def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_source, passing_sats, fig):
+def create_pdf_report_text_and_image(sat_type, date_label, swath_km, tle_source, passing_sats, fig):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
@@ -50,7 +50,7 @@ def create_pdf_report_text_and_image(sat_type, year, month, day, swath_km, tle_s
     pdf.set_font("Arial", "", 12)
     pdf.multi_cell(0, 10, f"TLE Source: {tle_source}")
     pdf.multi_cell(0, 10, f"Satellite Group: {sat_type}")
-    pdf.multi_cell(0, 10, f"Date: {year}-{month:02d}-{day:02d}")
+    pdf.multi_cell(0, 10, f"Date(s): {date_label}")
     pdf.multi_cell(0, 10, f"Swath Width: {swath_km} km")
     pdf.ln(5)
 
@@ -389,7 +389,10 @@ with tabs[0]:
 
         # === File outputs ===
         with st.spinner("Preparing PDF and Shapefile downloads..."):
-            pdf_buffer = create_pdf_report_text_and_image(tle_group, year, month, day, swath_km, tle_source, passing_sats, fig)
+            date_label = f"{date_range[0]} to {date_range[-1]}" if len(date_range) > 1 else date_range[0].isoformat()
+            pdf_buffer = create_pdf_report_text_and_image(
+                tle_group, date_label, swath_km, tle_source, all_passes, fig)
+
 
             st.download_button(
                 label="📄 Download Daily Report (.pdf)",

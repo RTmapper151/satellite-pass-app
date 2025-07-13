@@ -405,9 +405,10 @@ with tabs[0]:
 
             # === Shapefile export: satellite ground tracks + AOI boundary ===
             lines = []
-            for item in plot_data:
+            for item in all_plot_data:
                 lines.append({'geometry': item['trace_line'], 'satellite': item['name']})
             tracks_gdf = gpd.GeoDataFrame(lines, crs="EPSG:4326")
+
 
             aoi_boundary = gpd.GeoDataFrame({'geometry': aoi.geometry.boundary}, crs="EPSG:4326")
 

@@ -350,6 +350,8 @@ with tabs[0]:
         progress_bar.progress(40)
 
         # Step 3–4: Time intervals + pass analysis for all selected dates
+        swath_width_m = swath_km * 1000
+        
         all_passes = []
         all_plot_data = []
     

@@ -233,6 +233,40 @@ with tabs[0]:
             st.stop()
     
     else:
+    use_multi_box = st.checkbox("Define multiple bounding boxes")
+
+    if use_multi_box:
+        st.markdown("Enter each bounding box individually:")
+
+        if "boxes" not in st.session_state:
+            st.session_state.boxes = []
+
+        with st.form("add_box_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                min_lon = st.number_input("Min Longitude", key="min_lon_new")
+                min_lat = st.number_input("Min Latitude", key="min_lat_new")
+            with col2:
+                max_lon = st.number_input("Max Longitude", key="max_lon_new")
+                max_lat = st.number_input("Max Latitude", key="max_lat_new")
+
+            submitted = st.form_submit_button("Add Bounding Box")
+            if submitted:
+                st.session_state.boxes.append((min_lon, min_lat, max_lon, max_lat))
+
+        if st.session_state.boxes:
+            st.markdown("### Current Boxes:")
+            aoi_list = []
+            for i, (min_lon, min_lat, max_lon, max_lat) in enumerate(st.session_state.boxes):
+                st.markdown(f"🟦 Box {i+1}: ({min_lon}, {min_lat}) to ({max_lon}, {max_lat})")
+                aoi_list.append(create_aoi(min_lon, min_lat, max_lon, max_lat))
+
+            aoi = gpd.GeoDataFrame(pd.concat(aoi_list, ignore_index=True), crs="EPSG:4326")
+            st.pyplot(preview_aoi_map(aoi))
+        else:
+            st.info("➕ Add at least one box to continue.")
+            st.stop()
+    else:
         col1, col2 = st.columns(2)
         with col1:
             min_lon = st.number_input("Min Longitude", value=127.5)
@@ -240,9 +274,10 @@ with tabs[0]:
         with col2:
             max_lon = st.number_input("Max Longitude", value=129.0)
             max_lat = st.number_input("Max Latitude", value=27.0)
-    
+
         aoi = create_aoi(min_lon, min_lat, max_lon, max_lat)
         st.pyplot(preview_aoi_map(aoi))
+
 
     st.header("2. Select Satellite Group and Parameters")
     group_options = {

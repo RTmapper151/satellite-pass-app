@@ -58,8 +58,8 @@ def create_pdf_report_text_and_image(sat_type, date_label, swath_km, tle_source,
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, f"{len(passing_sats)} satellite(s) passed over the AOI:", ln=True)
         pdf.set_font("Arial", "", 12)
-        for name, t in passing_sats:
-            pdf.multi_cell(0, 10, f"{name} at {t}")
+        for name, t, d in passing_sats:
+            pdf.multi_cell(0, 10, f"{name} on {d} at {t}")
     else:
         pdf.multi_cell(0, 10, "No satellites passed over the area.")
     pdf.ln(10)

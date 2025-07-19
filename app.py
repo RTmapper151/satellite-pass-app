@@ -407,8 +407,11 @@ with tabs[1]:
         For temporary file management.
 
         ### How the Analysis Works
-        Focuses on Low Earth Orbit satellites whose passes over an area can be predicted using TLE data. GEO satellites remain fixed relative to Earth's surface and are excluded.
+        This tool predicts satellite passes over your Area of Interest (AOI) using publicly available Two-Line Element (TLE) data from CelesTrak. It focuses on Low Earth Orbit (LEO) satellites because their orbits bring them repeatedly over specific Earth regions, allowing accurate prediction of when and where they will pass.
 
+        Using Skyfield, the tool calculates satellite positions at user-defined time intervals throughout selected dates. It generates ground tracks and applies the chosen swath width as a buffer around these tracks to approximate coverage areas. By intersecting these swaths with your AOI, it identifies which satellites pass overhead and when.
+
+        Geostationary satellites (GEO) are excluded because they remain fixed relative to the Earth’s surface and don’t produce traditional “passes.” This focus on LEO satellites ensures timely, relevant data for applications like Earth observation, communications, and environmental monitoring.
         ### Contact
         Created by: Steven Littel  
         Email: scl323@nau.edu

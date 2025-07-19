@@ -268,7 +268,7 @@ with tabs[0]:
     "Active"
     ]
 
-    sat_type = st.selectbox("Satellite Group", options=options)
+    sat_type = st.selectbox("Satellite Group", options=options, index=0)
     st.caption(f"Description: {group_descriptions.get(sat_type, 'No description available.')}")
     tle_group = group_options[sat_type]
 

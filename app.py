@@ -256,7 +256,19 @@ with tabs[0]:
         "Active": "All currently operational satellites tracked by CelesTrak."
     }
 
-    sat_type = st.selectbox("Satellite Group", options=list(group_options.keys()))
+    options = [
+    "Earth Observation",
+    "Scientific",
+    "CubeSats",
+    "Weather",
+    "GOES",
+    "NOAA",
+    "Planet",
+    "Last 30 Days",
+    "Active"
+    ]
+
+    sat_type = st.selectbox("Satellite Group", options=options)
     st.caption(f"Description: {group_descriptions.get(sat_type, 'No description available.')}")
     tle_group = group_options[sat_type]
 

@@ -234,8 +234,8 @@ with tabs[0]:
 
     st.header("2. Select Satellite Group and Parameters")
     group_options = {
-        "Active": "active",
         "Earth Observation": "resource",
+        "Active": "active",
         "Scientific": "science",
         "CubeSats": "cubesat",
         "Weather": "weather",

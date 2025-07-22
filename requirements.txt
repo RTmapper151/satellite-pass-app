@@ -1,0 +1,12 @@
+streamlit
+geopandas
+matplotlib
+shapely
+skyfield
+numpy
+cartopy
+pandas
+fpdf
+pillow
+folium
+streamlit_folium

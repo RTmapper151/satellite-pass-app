@@ -17,10 +17,10 @@ A lightweight and accessible app for predicting when Earth Observation satellite
 
 ## Folder Structure
 
-satellite-pass-app/
-├── app.py # Main Streamlit app
-├── requirements.txt # Python dependencies
-└── README.md # You're here!
+- satellite-pass-app/
+- app.py # Main Streamlit app
+- requirements.txt # Python dependencies
+- README.md
 
 ---
 
@@ -75,14 +75,18 @@ ___
 
 - Python 3.9+
 - Internet access (for TLE data from CelesTrak)
-- Streamlit
-- Cartopy
-- Skyfield
-- Shapely
-- PyShp
-- ReportLab
-- GeoPandas
-- pandas, numpy, etc.
+- streamlit
+- geopandas
+- matplotlib
+- shapely
+- skyfield
+- numpy
+- cartopy
+- pandas
+- fpdf
+- pillow
+- folium
+- streamlit_folium
 
 ---
 

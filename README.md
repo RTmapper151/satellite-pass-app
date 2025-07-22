@@ -18,7 +18,6 @@ A lightweight and accessible app for predicting when Earth Observation satellite
 ## Folder Structure
 
 satellite-pass-app/
-│
 ├── app.py # Main Streamlit app
 ├── requirements.txt # Python dependencies
 └── README.md # You're here!
